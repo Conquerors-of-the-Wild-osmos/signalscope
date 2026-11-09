@@ -1,0 +1,8 @@
+{
+  "item.signalscope.radio": "Radio",
+  "item.signalscope.signalscope": "Signalscope",
+  "hud.signalscope.transmitting": "Radio: transmitting",
+  "hud.signalscope.no_players": "No players in this dimension",
+  "hud.signalscope.player": "%s · %s blocks",
+  "hud.signalscope.more": "… +%s"
+}

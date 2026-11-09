@@ -1,0 +1,8 @@
+{
+  "item.signalscope.radio": "Рация",
+  "item.signalscope.signalscope": "Сигналоскоп",
+  "hud.signalscope.transmitting": "Рация: передача",
+  "hud.signalscope.no_players": "В этом измерении нет игроков",
+  "hud.signalscope.player": "%s · %s блоков",
+  "hud.signalscope.more": "… +%s"
+}

@@ -53,6 +53,15 @@ dependencies {
             providers.gradleProperty("voicechat_api_version").get()
         }:fabric-stub"
     )
+
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    workingDir = layout.buildDirectory.get().asFile
 }
 
 tasks.processResources {

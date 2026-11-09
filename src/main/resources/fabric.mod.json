@@ -25,6 +25,9 @@
 		],
 		"client": [
 			"ru.itmo.ipkn.signalscope.client.SignalscopeClient"
+		],
+		"voicechat": [
+			"ru.itmo.ipkn.signalscope.voice.RadioVoicechatPlugin"
 		]
 	},
 	"mixins": [
