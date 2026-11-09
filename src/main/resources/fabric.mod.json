@@ -8,8 +8,10 @@
 		"nutsalhan87"
 	],
     "contributors": [
-        "Space_27", "_usopshiy_", "COSMOGLIST"
-    ]
+        "Space_27",
+        "_usopshiy_",
+        "COSMOGLIST"
+    ],
 	"contact": {
 		"issues": "https://github.com/Conquerors-of-the-Wild-osmos/signalscope/issues",
 		"sources": "https://github.com/Conquerors-of-the-Wild-osmos/signalscope"
