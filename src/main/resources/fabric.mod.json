@@ -3,13 +3,16 @@
 	"id": "signalscope",
 	"version": "${version}",
 	"name": "Signalscope",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Turn your radio into a beacon and your voice into a signal. Broadcast across your world, then use the Signalscope to locate transmissions, track their direction, and tune into distant voices. Can you find who's calling?",
 	"authors": [
-		"Me!"
+		"nutsalhan87"
 	],
+    "contributors": [
+        "Space_27", "_usopshiy_", "COSMOGLIST"
+    ]
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"issues": "https://github.com/Conquerors-of-the-Wild-osmos/signalscope/issues",
+		"sources": "https://github.com/Conquerors-of-the-Wild-osmos/signalscope"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/signalscope/icon.png",
