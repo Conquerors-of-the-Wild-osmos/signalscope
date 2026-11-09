@@ -33,6 +33,8 @@
 		"fabricloader": ">=0.20.1",
 		"minecraft": "~1.21.1",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"voicechat": "*",
+		"voicechat_api": ">=2.6.20"
 	}
 }

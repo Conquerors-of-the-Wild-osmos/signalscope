@@ -4,11 +4,20 @@ plugins {
 }
 
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+	maven {
+		name = "MaxHenkel"
+		url = uri("https://maven.maxhenkel.de/repository/public")
+		content {
+			includeGroup("de.maxhenkel.voicechat")
+		}
+	}
+	maven {
+		name = "Modrinth"
+		url = uri("https://api.modrinth.com/maven")
+		content {
+			includeGroup("maven.modrinth")
+		}
+	}
 }
 
 loom {
@@ -30,6 +39,12 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
+
+	// Simple Voice Chat API and the mod for development runs.
+	implementation("de.maxhenkel.voicechat:voicechat-api:${providers.gradleProperty("voicechat_api_version").get()}")
+	modRuntimeOnly("maven.modrinth:simple-voice-chat:fabric-${providers.gradleProperty("minecraft_version").get()}-${providers.gradleProperty("voicechat_version").get()}")
+	// Loom does not load nested mods in development; the stub provides the voicechat_api mod ID.
+	modRuntimeOnly("de.maxhenkel.voicechat:voicechat-api:${providers.gradleProperty("voicechat_api_version").get()}:fabric-stub")
 }
 
 tasks.processResources {
