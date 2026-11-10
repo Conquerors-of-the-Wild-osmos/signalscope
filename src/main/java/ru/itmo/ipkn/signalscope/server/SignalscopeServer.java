@@ -126,15 +126,14 @@ public final class SignalscopeServer {
         for (ServerPlayer receiver : players) {
             UUID receiverId = receiver.getUUID();
 
-            if (!SignalscopeItems.holdsSignalscope(receiver)
-                    || !ServerPlayNetworking.canSend(receiver, PlayerSignalsPayload.TYPE)) {
+            if (!ServerPlayNetworking.canSend(receiver, PlayerSignalsPayload.TYPE)) {
                 lastSent.remove(receiverId);
                 continue;
             }
 
             ResourceLocation dimension = receiver.level().dimension().location();
 
-            Map<UUID, PlayerSignalsPayload.Signal> current = collectSignals(receiver, players);
+            Map<UUID, PlayerSignalsPayload.Signal> current = collectSignals(receiver, players, radioPlayers);
 
             ReceiverState previous = lastSent.get(receiverId);
 
@@ -152,7 +151,8 @@ public final class SignalscopeServer {
 
     private static Map<UUID, PlayerSignalsPayload.Signal> collectSignals(
             ServerPlayer receiver,
-            List<ServerPlayer> players
+            List<ServerPlayer> players,
+            Map<UUID, RadioState.Player> radioPlayers
     ) {
         Vec3 receiverPosition = receiver.getBoundingBox().getCenter();
 
@@ -162,6 +162,7 @@ public final class SignalscopeServer {
                 .filter(player -> player != receiver
                         && player.level() == receiver.level())
                 .filter(player -> player.isAlive() && !player.isSpectator())
+                .filter(SignalscopeItems::hasActiveRadio)
                 .sorted(Comparator.comparingDouble(
                         (ServerPlayer player) ->
                                 player.getBoundingBox().getCenter()
@@ -171,7 +172,8 @@ public final class SignalscopeServer {
                 .map(player -> new PlayerSignalsPayload.Signal(
                         player.getUUID(),
                         player.getGameProfile().getName(),
-                        player.getBoundingBox().getCenter()
+                        player.getBoundingBox().getCenter(),
+                        radioPlayers.get(player.getUUID()).transmitting()
                 ))
                 .toList();
 
@@ -237,11 +239,7 @@ public final class SignalscopeServer {
             PlayerSignalsPayload.Signal newSignal = entry.getValue();
             PlayerSignalsPayload.Signal oldSignal = sent.get(id);
 
-            boolean changed = oldSignal == null
-                    || !oldSignal.name().equals(newSignal.name())
-                    || oldSignal.position().distanceToSqr(newSignal.position()) > POSITION_EPSILON_SQUARED;
-
-            if (changed) {
+            if (signalChanged(oldSignal, newSignal)) {
                 updated.add(newSignal);
                 sent.put(id, newSignal);
                 remaining--;
@@ -259,6 +257,13 @@ public final class SignalscopeServer {
         );
 
         lastSent.put(receiver.getUUID(), new ReceiverState(dimension, previous.lastFullSyncTick(), sent));
+    }
+
+    static boolean signalChanged(PlayerSignalsPayload.Signal oldSignal, PlayerSignalsPayload.Signal newSignal) {
+        return oldSignal == null
+                || !oldSignal.name().equals(newSignal.name())
+                || oldSignal.transmitting() != newSignal.transmitting()
+                || oldSignal.position().distanceToSqr(newSignal.position()) > POSITION_EPSILON_SQUARED;
     }
 
     private static void clear() {

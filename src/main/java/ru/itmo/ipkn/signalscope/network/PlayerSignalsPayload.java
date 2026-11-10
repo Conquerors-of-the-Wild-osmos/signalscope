@@ -47,8 +47,8 @@ public record PlayerSignalsPayload(ResourceLocation dimension, boolean fullSnaps
             throw new IllegalArgumentException("Invalid player signal count");
         }
 
-        // Minimum size: 41 bytes per signal and 16 bytes per removed UUID.
-        long minimumBytes = (long) playerCount * 41 + (long) removedCount * 16;
+        // Minimum size: 42 bytes per signal and 16 bytes per removed UUID.
+        long minimumBytes = (long) playerCount * 42 + (long) removedCount * 16;
 
         if (minimumBytes > buffer.readableBytes()) {
             throw new IllegalArgumentException("Incomplete player signals packet");
@@ -58,8 +58,7 @@ public record PlayerSignalsPayload(ResourceLocation dimension, boolean fullSnaps
 
         for (int i = 0; i < playerCount; i++) {
             players.add(new Signal(buffer.readUUID(), buffer.readUtf(16),
-                    new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()))
-            );
+                    new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()), buffer.readBoolean()));
         }
 
         List<UUID> removed = new ArrayList<>(removedCount);
@@ -82,6 +81,7 @@ public record PlayerSignalsPayload(ResourceLocation dimension, boolean fullSnaps
             buffer.writeDouble(player.position().x);
             buffer.writeDouble(player.position().y);
             buffer.writeDouble(player.position().z);
+            buffer.writeBoolean(player.transmitting());
         }
         for (UUID id : removed) {
             buffer.writeUUID(id);
@@ -93,7 +93,7 @@ public record PlayerSignalsPayload(ResourceLocation dimension, boolean fullSnaps
         return TYPE;
     }
 
-    public record Signal(UUID id, String name, Vec3 position) {
+    public record Signal(UUID id, String name, Vec3 position, boolean transmitting) {
         public Signal {
             if (id == null || name == null || position == null) {
                 throw new IllegalArgumentException("Signal fields cannot be null");

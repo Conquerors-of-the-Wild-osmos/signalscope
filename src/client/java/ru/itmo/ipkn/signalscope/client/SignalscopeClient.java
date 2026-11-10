@@ -19,19 +19,23 @@ public class SignalscopeClient implements ClientModInitializer {
     public void onInitializeClient() {
         var signals = new ClientSignals();
         var radio = new RadioController();
+        var radioSounds = new RadioSounds(signals);
         ClientPlayNetworking.registerGlobalReceiver(PlayerSignalsPayload.TYPE,
                 (payload, context) -> signals.accept(payload, context.client()));
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             signals.clear();
             radio.reset();
+            radioSounds.clear(client);
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             signals.clear();
             radio.reset();
+            radioSounds.clear(client);
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             radio.tick(client);
             signals.tick(client);
+            radioSounds.tick(client);
         });
         HudRenderCallback.EVENT.register(new SignalscopeHud(signals)::render);
     }

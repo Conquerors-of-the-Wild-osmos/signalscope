@@ -57,8 +57,8 @@ class SignalInterpolatorTest {
     @Test
     void tracksPlayersByIdWhenSnapshotOrderChanges() {
         UUID other = UUID.randomUUID();
-        interpolator.accept(List.of(signal(Vec3.ZERO), new Signal(other, "Other", new Vec3(100, 0, 0))), 0);
-        interpolator.accept(List.of(new Signal(other, "Other", new Vec3(110, 0, 0)),
+        interpolator.accept(List.of(signal(Vec3.ZERO), new Signal(other, "Other", new Vec3(100, 0, 0), false)), 0);
+        interpolator.accept(List.of(new Signal(other, "Other", new Vec3(110, 0, 0), false),
                 signal(new Vec3(10, 0, 0))), 250 * MS);
         var sampled = interpolator.sample(375 * MS);
         assertEquals(other, sampled.get(0).id());
@@ -92,8 +92,16 @@ class SignalInterpolatorTest {
         assertPosition(new Vec3(10_000, 80, 0), 250);
     }
 
+    @Test
+    void appliesTransmissionChangesImmediatelyDuringInterpolation() {
+        interpolator.accept(List.of(signal(Vec3.ZERO)), 0);
+        interpolator.acceptDelta(List.of(new Signal(player, "Explorer", new Vec3(10, 0, 0), true)), List.of(), 250 * MS);
+        assertTrue(interpolator.sample(250 * MS).getFirst().transmitting());
+        assertPosition(Vec3.ZERO, 250);
+    }
+
     private Signal signal(Vec3 position) {
-        return new Signal(player, "Explorer", position);
+        return new Signal(player, "Explorer", position, false);
     }
 
     private void assertPosition(Vec3 expected, long millis) {

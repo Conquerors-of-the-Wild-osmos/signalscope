@@ -31,6 +31,14 @@ public final class SignalscopeItems {
                 && holdsRadio(player, player.getUsedItemHand());
     }
 
+    public static boolean hasActiveRadio(net.minecraft.world.entity.player.Player player) {
+        if (player.getOffhandItem().is(RADIO)) return true;
+        for (int slot = 0; slot < 9; slot++) {
+            if (player.getInventory().getItem(slot).is(RADIO)) return true;
+        }
+        return false;
+    }
+
     public static boolean holdsRadio(LivingEntity player, InteractionHand hand) {
         return player.getItemInHand(hand).is(RADIO);
     }

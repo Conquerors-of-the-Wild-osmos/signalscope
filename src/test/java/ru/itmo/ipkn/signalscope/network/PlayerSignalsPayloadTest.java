@@ -20,28 +20,12 @@ class PlayerSignalsPayloadTest {
     @Test
     void roundTripsPlayersBeyondEntityTrackingRange() {
         var payload = new PlayerSignalsPayload(
-                DIMENSION,
-                true,
+                DIMENSION, true,
                 List.of(
-                        new PlayerSignalsPayload.Signal(
-                                UUID.randomUUID(),
-                                "Explorer",
-                                new Vec3(30_000, 80, -20_000)
-                        ),
-                        new PlayerSignalsPayload.Signal(
-                                UUID.randomUUID(),
-                                "Nearby",
-                                new Vec3(0, 65, 0)
-                        )
-                ),
-                List.of()
-        );
-
-        var buffer = new RegistryFriendlyByteBuf(
-                Unpooled.buffer(),
-                RegistryAccess.EMPTY
-        );
-
+                        new PlayerSignalsPayload.Signal(UUID.randomUUID(), "Explorer", new Vec3(30_000, 80, -20_000), true),
+                        new PlayerSignalsPayload.Signal(UUID.randomUUID(), "Nearby", new Vec3(0, 65, 0), false)
+                ), List.of());
+        var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         try {
             PlayerSignalsPayload.CODEC.encode(buffer, payload);
 
@@ -88,7 +72,7 @@ class PlayerSignalsPayloadTest {
                         new PlayerSignalsPayload.Signal(
                                 updatedId,
                                 "Explorer",
-                                new Vec3(100, 70, 200)
+                                new Vec3(100, 70, 200), true
                         )
                 ),
                 List.of(removedId)
@@ -132,13 +116,32 @@ class PlayerSignalsPayloadTest {
     }
 
     @Test
+    void rejectsSignalMissingTransmissionFlag() {
+        var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        try {
+            buffer.writeResourceLocation(DIMENSION);
+            buffer.writeBoolean(true);
+            buffer.writeVarInt(1);
+            buffer.writeVarInt(0);
+            buffer.writeUUID(UUID.randomUUID());
+            buffer.writeUtf("");
+            buffer.writeDouble(0);
+            buffer.writeDouble(0);
+            buffer.writeDouble(0);
+            assertThrows(IllegalArgumentException.class, () -> PlayerSignalsPayload.CODEC.decode(buffer));
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
     void rejectsNonFiniteCoordinates() {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new PlayerSignalsPayload.Signal(
                         UUID.randomUUID(),
                         "Explorer",
-                        new Vec3(Double.NaN, 0, 0)
+                        new Vec3(Double.NaN, 0, 0), false
                 )
         );
     }
@@ -150,7 +153,7 @@ class PlayerSignalsPayloadTest {
                 new PlayerSignalsPayload.Signal(
                         UUID.randomUUID(),
                         "Explorer",
-                        new Vec3(0, 64, 0)
+                        new Vec3(0, 64, 0), false
                 )
         );
 
