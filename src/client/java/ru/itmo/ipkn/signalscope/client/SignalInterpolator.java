@@ -8,28 +8,48 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Client-only presentation state; the server still sends one snapshot every five ticks. */
+/**
+ * Client-only presentation state with interpolated signal positions.
+ */
 final class SignalInterpolator {
+
     private static final long TRANSITION_NANOS = 250_000_000L;
     private static final double SNAP_DISTANCE_SQUARED = 64 * 64;
 
     private Map<UUID, Track> tracks = new LinkedHashMap<>();
 
+    // Full snapshot: replace the entire set of tracks.
     void accept(List<Signal> signals, long now) {
         Map<UUID, Track> next = new LinkedHashMap<>();
         for (Signal signal : signals) {
-            Track previous = tracks.get(signal.id());
-            Vec3 from = signal.position();
-            if (previous != null
-                    && previous.target().position().distanceToSqr(signal.position()) <= SNAP_DISTANCE_SQUARED) {
-                // Retarget from the currently displayed position, even if the previous transition
-                // has not finished. Early/jittery packets must not introduce a position jump.
-                from = previous.positionAt(now);
-            }
-            next.put(signal.id(), new Track(signal, from, now));
+            next.put(signal.id(), createTrack(signal, now));
         }
-        // Full snapshots also remove players that left; never animate a departed target.
+
         tracks = next;
+    }
+
+    // Delta: update only changed signals and remove departed players.
+    void acceptDelta(List<Signal> updated, List<UUID> removed, long now) {
+        for (UUID id : removed) {
+            tracks.remove(id);
+        }
+
+        for (Signal signal : updated) {
+            tracks.put(signal.id(), createTrack(signal, now));
+        }
+    }
+
+    private Track createTrack(Signal signal, long now) {
+        Track previous = tracks.get(signal.id());
+        Vec3 from = signal.position();
+        if (previous != null
+                && previous.target().position().distanceToSqr(signal.position())
+                <= SNAP_DISTANCE_SQUARED) {
+            // Continue from the currently displayed position.
+            from = previous.positionAt(now);
+        }
+
+        return new Track(signal, from, now);
     }
 
     List<Signal> sample(long now) {
