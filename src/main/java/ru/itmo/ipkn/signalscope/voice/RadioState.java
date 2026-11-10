@@ -10,6 +10,7 @@ public final class RadioState {
 
     private static volatile Snapshot server = new Snapshot(Map.of(), 0);
     private static volatile boolean clientTransmitting;
+    private static volatile Map<UUID, Float> clientGains = Map.of();
 
     private RadioState() {
     }
@@ -26,6 +27,14 @@ public final class RadioState {
 
     public static void clearServer() {
         server = new Snapshot(Map.of(), 0);
+    }
+
+    public static void setClientGains(Map<UUID, Float> gains) {
+        clientGains = Map.copyOf(gains);
+    }
+
+    public static float clientGain(UUID channel) {
+        return channel == null ? 0f : clientGains.getOrDefault(channel, 0f);
     }
 
     public static void setClientTransmitting(boolean transmitting) {

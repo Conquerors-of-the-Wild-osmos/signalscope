@@ -7,6 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignalGeometryTest {
     @Test
+    void gainFallsWithinFirstThirdOfReceptionRange() {
+        assertEquals(1, SignalGeometry.gain(0, 10, 100));
+        assertEquals(1, SignalGeometry.gain(10, 10, 100));
+        assertEquals(0.25, SignalGeometry.gain(25, 10, 100));
+        assertEquals(0, SignalGeometry.gain(40, 10, 100));
+        assertEquals(0, SignalGeometry.gain(70, 10, 100));
+        assertEquals(0, SignalGeometry.gain(100, 10, 100));
+    }
+
+    @Test
     void distinguishesAheadBehindAndAbove() {
         assertEquals(0, SignalGeometry.angleDegrees(0, 0, 1, 0, 0, 10), 1.0e-6);
         assertEquals(180, SignalGeometry.angleDegrees(0, 0, 1, 0, 0, -10), 1.0e-6);

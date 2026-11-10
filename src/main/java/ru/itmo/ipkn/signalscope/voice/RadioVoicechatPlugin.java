@@ -5,12 +5,16 @@ import de.maxhenkel.voicechat.api.events.ClientSoundEvent;
 import de.maxhenkel.voicechat.api.events.EventRegistration;
 import de.maxhenkel.voicechat.api.events.MicrophonePacketEvent;
 import de.maxhenkel.voicechat.api.events.VoicechatServerStoppedEvent;
+import de.maxhenkel.voicechat.api.events.VoicechatServerStartedEvent;
+import de.maxhenkel.voicechat.api.events.OpenALSoundEvent;
+import org.lwjgl.openal.AL10;
 import ru.itmo.ipkn.signalscope.Signalscope;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public final class RadioVoicechatPlugin implements VoicechatPlugin {
+    private static final String CATEGORY = "signalscope";
 
     @Override
     public String getPluginId() {
@@ -22,6 +26,14 @@ public final class RadioVoicechatPlugin implements VoicechatPlugin {
         registration.registerEvent(ClientSoundEvent.class, this::onClientSound);
         registration.registerEvent(MicrophonePacketEvent.class, this::onMicrophonePacket);
         registration.registerEvent(VoicechatServerStoppedEvent.class, event -> RadioState.clearServer());
+        registration.registerEvent(VoicechatServerStartedEvent.class, event -> event.getVoicechat().registerVolumeCategory(
+                event.getVoicechat().volumeCategoryBuilder().setId(CATEGORY).setName("Signalscope").build()));
+        registration.registerEvent(OpenALSoundEvent.Post.class, event -> {
+            if (CATEGORY.equals(event.getCategory())) {
+                float gain = RadioState.clientGain(event.getChannelId());
+                AL10.alSourcef(event.getSource(), AL10.AL_GAIN, AL10.alGetSourcef(event.getSource(), AL10.AL_GAIN) * gain);
+            }
+        });
     }
 
     void onClientSound(ClientSoundEvent event) {
@@ -53,6 +65,7 @@ public final class RadioVoicechatPlugin implements VoicechatPlugin {
         }
         var packet = event.getPacket().staticSoundPacketBuilder()
                 .channelId(channelId(senderId))
+                .category(CATEGORY)
                 .build();
         var api = event.getVoicechat();
         for (var entry : players.entrySet()) {
@@ -66,7 +79,7 @@ public final class RadioVoicechatPlugin implements VoicechatPlugin {
         }
     }
 
-    static UUID channelId(UUID sender) {
+    public static UUID channelId(UUID sender) {
         return UUID.nameUUIDFromBytes(("signalscope:radio:" + sender).getBytes(StandardCharsets.UTF_8));
     }
 }

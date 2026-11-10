@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
-/** Global passive signals; each source can later receive its own directional gain. */
+/** Passive signals share the same directional gain as radio voice. */
 final class RadioSounds {
     private final ClientSignals signals;
     private final Map<UUID, BeaconSound> sounds = new HashMap<>();
@@ -21,7 +21,7 @@ final class RadioSounds {
         this.signals = signals;
     }
 
-    void tick(Minecraft client) {
+    void tick(Minecraft client, Map<UUID, Float> gains) {
         var active = new HashSet<UUID>();
         for (var signal : signals.players()) {
             if (signal.transmitting() || client.player == null || signal.id().equals(client.player.getUUID())) continue;
@@ -32,10 +32,11 @@ final class RadioSounds {
                 sounds.put(signal.id(), sound);
                 client.getSoundManager().play(sound);
             }
-            sound.audible = true;
+            sound.stopWhenSilent = false;
+            sound.targetVolume = 0.15f * gains.getOrDefault(signal.id(), 0f);
         }
         sounds.forEach((id, sound) -> {
-            if (!active.contains(id)) sound.audible = false;
+            if (!active.contains(id)) sound.stopWhenSilent = true;
         });
         sounds.entrySet().removeIf(entry -> entry.getValue().isStopped());
     }
@@ -46,7 +47,8 @@ final class RadioSounds {
     }
 
     private static final class BeaconSound extends AbstractTickableSoundInstance {
-        private boolean audible = true;
+        private float targetVolume;
+        private boolean stopWhenSilent;
 
         BeaconSound(UUID id) {
             super(SoundEvent.createVariableRangeEvent(Signalscope.id("beacon_" + Math.floorMod(id.hashCode(), 5))),
@@ -64,9 +66,8 @@ final class RadioSounds {
 
         @Override
         public void tick() {
-            // Five ticks in, eight ticks out; changing direction keeps the current level.
-            volume = audible ? Math.min(0.15f, volume + 0.03f) : Math.max(0, volume - 0.01875f);
-            if (!audible && volume == 0) stop();
+            volume = stopWhenSilent ? 0 : targetVolume;
+            if (stopWhenSilent) stop();
         }
     }
 }
