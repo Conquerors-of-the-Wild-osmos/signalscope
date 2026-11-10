@@ -16,6 +16,7 @@ public class PTTMicrophoneProcessorMixin {
                     target = "Lde/maxhenkel/voicechat/voice/client/PTTMicrophoneProcessor;isPttButtonDown()Z",
                     remap = false
             ),
+            require = 1,
             remap = false
     )
     private boolean signalscope$includeRadioPtt(PTTMicrophoneProcessor processor) {
