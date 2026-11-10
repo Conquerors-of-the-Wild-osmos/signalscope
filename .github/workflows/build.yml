@@ -20,6 +20,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
 
     outputs:
       artifact_name: ${{ steps.select_jar.outputs.filename }}
