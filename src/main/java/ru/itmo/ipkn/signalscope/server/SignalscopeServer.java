@@ -134,8 +134,7 @@ public final class SignalscopeServer {
 
             ResourceLocation dimension = receiver.level().dimension().location();
 
-            Map<UUID, PlayerSignalsPayload.Signal> current =
-                    collectSignals(receiver, players);
+            Map<UUID, PlayerSignalsPayload.Signal> current = collectSignals(receiver, players);
 
             ReceiverState previous = lastSent.get(receiverId);
 
