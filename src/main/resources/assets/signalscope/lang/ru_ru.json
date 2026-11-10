@@ -5,8 +5,6 @@
   "hud.signalscope.no_players": "В этом измерении нет игроков",
   "hud.signalscope.player": "%s · %s блоков",
   "hud.signalscope.more": "… +%s",
-  "key.categories.signalscope": "Сигналоскоп",
-  "key.signalscope.config": "Открыть настройки сигналоскопа",
   "config.signalscope.title": "Настройки сигналоскопа",
   "config.signalscope.category": "Основные",
   "config.signalscope.stable_angle": "Угол стабильного приёма (градусы)",

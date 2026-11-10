@@ -27,6 +27,9 @@
 			"ru.itmo.ipkn.signalscope.client.ConfigClient",
 			"ru.itmo.ipkn.signalscope.client.SignalscopeClient"
 		],
+		"modmenu": [
+			"ru.itmo.ipkn.signalscope.client.SignalscopeModMenu"
+		],
 		"voicechat": [
 			"ru.itmo.ipkn.signalscope.voice.RadioVoicechatPlugin"
 		]
@@ -38,6 +41,9 @@
 			"environment": "client"
 		}
 	],
+	"suggests": {
+		"modmenu": ">=11.0.0"
+	},
 	"depends": {
 		"fabricloader": ">=0.20.1",
 		"minecraft": "~1.21.1",

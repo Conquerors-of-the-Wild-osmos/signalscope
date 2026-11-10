@@ -5,8 +5,6 @@
   "hud.signalscope.no_players": "No players in this dimension",
   "hud.signalscope.player": "%s · %s blocks",
   "hud.signalscope.more": "… +%s",
-  "key.categories.signalscope": "Signalscope",
-  "key.signalscope.config": "Open Signalscope settings",
   "config.signalscope.title": "Signalscope settings",
   "config.signalscope.category": "General",
   "config.signalscope.stable_angle": "Stable reception angle (degrees)",

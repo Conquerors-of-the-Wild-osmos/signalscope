@@ -46,6 +46,8 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
 
     modImplementation("maven.modrinth:yacl:3.8.2+1.21.1-fabric")
+    modCompileOnly("maven.modrinth:modmenu:11.0.5")
+    modLocalRuntime("maven.modrinth:modmenu:11.0.5")
     // Loom does not load YACL's nested libraries in development.
     runtimeOnly("org.quiltmc.parsers:gson:0.2.1")
 
