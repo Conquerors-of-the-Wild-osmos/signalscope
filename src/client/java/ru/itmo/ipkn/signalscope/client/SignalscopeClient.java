@@ -24,18 +24,24 @@ public class SignalscopeClient implements ClientModInitializer {
                 (payload, context) -> signals.accept(payload, context.client()));
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             signals.clear();
+            RadioState.setClientGains(java.util.Map.of());
             radio.reset();
             radioSounds.clear(client);
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             signals.clear();
+            RadioState.setClientGains(java.util.Map.of());
             radio.reset();
             radioSounds.clear(client);
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             radio.tick(client);
             signals.tick(client);
-            radioSounds.tick(client);
+            var gains = signals.gains(client);
+            var channelGains = new java.util.HashMap<java.util.UUID, Float>();
+            gains.forEach((id, gain) -> channelGains.put(ru.itmo.ipkn.signalscope.voice.RadioVoicechatPlugin.channelId(id), gain));
+            RadioState.setClientGains(channelGains);
+            radioSounds.tick(client, gains);
         });
         HudRenderCallback.EVENT.register(new SignalscopeHud(signals)::render);
     }

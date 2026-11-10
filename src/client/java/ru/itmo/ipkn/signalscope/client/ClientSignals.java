@@ -3,6 +3,8 @@ package ru.itmo.ipkn.signalscope.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
+import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
+import ru.itmo.ipkn.signalscope.signal.SignalGeometry;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -85,6 +87,23 @@ public final class ClientSignals {
 
     public List<PlayerSignalsPayload.Signal> players() {
         return interpolator.sample(System.nanoTime());
+    }
+
+    public Map<UUID, Float> gains(Minecraft client) {
+        if (client.player == null || !client.player.isAlive() || !SignalscopeItems.holdsSignalscope(client.player)) {
+            return Map.of();
+        }
+        var eye = client.player.getEyePosition();
+        var look = client.player.getViewVector(1.0f);
+        var config = SignalscopeConfig.get();
+        Map<UUID, Float> gains = new LinkedHashMap<>();
+        for (var signal : players()) {
+            var offset = signal.position().subtract(eye);
+            double angle = SignalGeometry.angleDegrees(look.x, look.y, look.z, offset.x, offset.y, offset.z);
+            gains.put(signal.id(), (float) (SignalGeometry.gain(angle, config.stableAngle, config.receptionAngle)
+                    * config.voiceVolume / 100.0));
+        }
+        return Map.copyOf(gains);
     }
 
     public boolean shouldShowEmptyNotice() {

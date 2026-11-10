@@ -7,6 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignalGeometryTest {
     @Test
+    void gainFallsLinearlyBetweenAngles() {
+        assertEquals(1, SignalGeometry.gain(0, 10, 90));
+        assertEquals(1, SignalGeometry.gain(10, 10, 90));
+        assertEquals(0.5, SignalGeometry.gain(50, 10, 90));
+        assertEquals(0, SignalGeometry.gain(90, 10, 90));
+        assertEquals(0, SignalGeometry.gain(120, 10, 90));
+    }
+
+    @Test
     void distinguishesAheadBehindAndAbove() {
         assertEquals(0, SignalGeometry.angleDegrees(0, 0, 1, 0, 0, 10), 1.0e-6);
         assertEquals(180, SignalGeometry.angleDegrees(0, 0, 1, 0, 0, -10), 1.0e-6);

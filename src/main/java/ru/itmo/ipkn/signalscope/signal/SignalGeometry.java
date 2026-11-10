@@ -7,6 +7,10 @@ public final class SignalGeometry {
     private SignalGeometry() {
     }
 
+    public static double gain(double angle, double stableAngle, double receptionAngle) {
+        return Math.clamp((receptionAngle - angle) / (receptionAngle - stableAngle), 0.0, 1.0);
+    }
+
     public static double angleDegrees(double lookX, double lookY, double lookZ,
                                       double deltaX, double deltaY, double deltaZ) {
         double lookLength = Math.sqrt(lookX * lookX + lookY * lookY + lookZ * lookZ);

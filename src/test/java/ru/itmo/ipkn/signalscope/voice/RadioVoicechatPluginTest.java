@@ -34,6 +34,19 @@ class RadioVoicechatPluginTest {
     void clearState() {
         RadioState.clearServer();
         RadioState.setClientTransmitting(false);
+        RadioState.setClientGains(Map.of());
+    }
+
+    @Test
+    void clientGainUsesImmutableChannelSnapshotAndDefaultsToSilence() {
+        UUID channel = RadioVoicechatPlugin.channelId(speaker);
+        var gains = new HashMap<UUID, Float>();
+        gains.put(channel, 0.5f);
+        RadioState.setClientGains(gains);
+        gains.clear();
+        assertEquals(0.5f, RadioState.clientGain(channel));
+        assertEquals(0f, RadioState.clientGain(UUID.randomUUID()));
+        assertEquals(0f, RadioState.clientGain(null));
     }
 
     @Test
@@ -169,6 +182,10 @@ class RadioVoicechatPluginTest {
         var builder = stub(StaticSoundPacket.Builder.class, (proxy, method, args) -> {
             if (method.getName().equals("channelId")) {
                 channel = (UUID) args[0];
+                return proxy;
+            }
+            if (method.getName().equals("category")) {
+                assertEquals("signalscope", args[0]);
                 return proxy;
             }
             if (method.getName().equals("build")) {
