@@ -100,8 +100,6 @@ jobs:
             📦 [Download build artifact](${process.env.ARTIFACT_URL})
             
             **Commit:** \`${process.env.COMMIT_SHA.substring(0, 7)}\`
-            
-            _Built automatically by GitHub Actions._
             `;
             
             const { owner, repo } = context.repo;
@@ -141,7 +139,6 @@ jobs:
             
               console.log('Created PR comment.');
             }
-
 
       - name: Add download link to summary
         env:
