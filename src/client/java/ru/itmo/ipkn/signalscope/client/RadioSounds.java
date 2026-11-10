@@ -12,7 +12,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
-/** Passive signals share the same directional gain as radio voice. */
+/**
+ * Passive signals share the same directional gain as radio voice.
+ */
 final class RadioSounds {
     private final ClientSignals signals;
     private final Map<UUID, BeaconSound> sounds = new HashMap<>();

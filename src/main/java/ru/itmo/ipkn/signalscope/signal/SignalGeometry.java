@@ -4,6 +4,7 @@ package ru.itmo.ipkn.signalscope.signal;
  * Direction calculations shared by the HUD and tests; independent of rendering and audio.
  */
 public final class SignalGeometry {
+
     private SignalGeometry() {
     }
 
