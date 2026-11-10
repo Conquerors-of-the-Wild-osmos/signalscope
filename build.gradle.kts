@@ -5,6 +5,11 @@ plugins {
 
 repositories {
     maven {
+        name = "Quilt"
+        url = uri("https://maven.quiltmc.org/repository/release")
+        content { includeGroup("org.quiltmc.parsers") }
+    }
+    maven {
         name = "MaxHenkel"
         url = uri("https://maven.maxhenkel.de/repository/public")
         content {
@@ -39,6 +44,12 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
+
+    modImplementation("maven.modrinth:yacl:3.8.2+1.21.1-fabric")
+    modCompileOnly("maven.modrinth:modmenu:11.0.5")
+    modLocalRuntime("maven.modrinth:modmenu:11.0.5")
+    // Loom does not load YACL's nested libraries in development.
+    runtimeOnly("org.quiltmc.parsers:gson:0.2.1")
 
     // Simple Voice Chat API and the mod for development runs.
     implementation("de.maxhenkel.voicechat:voicechat-api:${providers.gradleProperty("voicechat_api_version").get()}")

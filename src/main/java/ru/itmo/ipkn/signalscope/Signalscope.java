@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
+import ru.itmo.ipkn.signalscope.network.RadioControlPayload;
 import ru.itmo.ipkn.signalscope.server.SignalscopeServer;
 
 public class Signalscope implements ModInitializer {
@@ -19,6 +20,7 @@ public class Signalscope implements ModInitializer {
     public void onInitialize() {
         SignalscopeItems.initialize();
         PayloadTypeRegistry.playS2C().register(PlayerSignalsPayload.TYPE, PlayerSignalsPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(RadioControlPayload.TYPE, RadioControlPayload.CODEC);
         SignalscopeServer.initialize();
         LOGGER.info("Signalscope PoC initialized");
     }

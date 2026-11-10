@@ -14,7 +14,6 @@ import java.util.Comparator;
 
 public final class SignalscopeHud {
 
-    private static final double LOCK_ANGLE = 5;
     private final ClientSignals signals;
 
     public SignalscopeHud(ClientSignals signals) {
@@ -49,15 +48,17 @@ public final class SignalscopeHud {
         }
 
         // Keep the nearest player's row closest to the crosshair. Fit the remaining rows above it.
-        int visible = Math.min(ordered.size(), Math.max(1, (centerY - 24) / 30));
+        var config = SignalscopeConfig.get();
+        int visible = Math.min(ordered.size(), Math.min(config.maxNicknames, Math.max(1, (centerY - 24) / 30)));
         for (int index = 0; index < visible; index++) {
             PlayerSignalsPayload.Signal signal = ordered.get(index);
             Vec3 offset = signal.position().subtract(eye);
             double angle = SignalGeometry.angleDegrees(look.x, look.y, look.z, offset.x, offset.y, offset.z);
-            boolean locked = angle <= LOCK_ANGLE;
-            int separation = (int) Math.round(Math.clamp((angle - LOCK_ANGLE) / 85, 0.0, 1.0)
+            boolean locked = angle <= config.stableAngle;
+            int separation = (int) Math.round(Math.clamp((angle - config.stableAngle)
+                    / (config.receptionAngle - config.stableAngle), 0.0, 1.0)
                     * Math.min(90, graphics.guiWidth() / 4));
-            int color = locked ? 0xFF70FF70 : angle > 90 ? 0x88FF6060 : 0xFFFF6060;
+            int color = locked ? 0xFF70FF70 : angle > config.receptionAngle ? 0x88FF6060 : 0xFFFF6060;
             int y = centerY - 30 - index * 30;
             drawHalfRing(graphics, centerX - separation, y, true, color);
             drawHalfRing(graphics, centerX + separation, y, false, color);

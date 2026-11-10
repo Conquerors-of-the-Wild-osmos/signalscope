@@ -24,7 +24,11 @@
 			"ru.itmo.ipkn.signalscope.Signalscope"
 		],
 		"client": [
+			"ru.itmo.ipkn.signalscope.client.ConfigClient",
 			"ru.itmo.ipkn.signalscope.client.SignalscopeClient"
+		],
+		"modmenu": [
+			"ru.itmo.ipkn.signalscope.client.SignalscopeModMenu"
 		],
 		"voicechat": [
 			"ru.itmo.ipkn.signalscope.voice.RadioVoicechatPlugin"
@@ -37,12 +41,16 @@
 			"environment": "client"
 		}
 	],
+	"suggests": {
+		"modmenu": ">=11.0.0"
+	},
 	"depends": {
 		"fabricloader": ">=0.20.1",
 		"minecraft": "~1.21.1",
 		"java": ">=21",
 		"fabric-api": "*",
 		"voicechat": "*",
-		"voicechat_api": ">=2.6.20"
+		"voicechat_api": ">=2.6.20",
+		"yet_another_config_lib_v3": ">=3.8.2"
 	}
 }

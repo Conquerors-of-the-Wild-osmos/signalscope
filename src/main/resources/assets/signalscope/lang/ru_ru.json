@@ -4,5 +4,19 @@
   "hud.signalscope.transmitting": "Рация: передача",
   "hud.signalscope.no_players": "В этом измерении нет игроков",
   "hud.signalscope.player": "%s · %s блоков",
-  "hud.signalscope.more": "… +%s"
+  "hud.signalscope.more": "… +%s",
+  "config.signalscope.title": "Настройки сигналоскопа",
+  "config.signalscope.category": "Основные",
+  "config.signalscope.stable_angle": "Угол стабильного приёма (градусы)",
+  "config.signalscope.stable_angle.description": "Максимальный угол стабильного приёма. Должен быть меньше предельного угла приёма.",
+  "config.signalscope.reception_angle": "Предельный угол приёма (градусы)",
+  "config.signalscope.reception_angle.description": "Максимальный угол приёма. При необходимости увеличивается относительно угла стабильного приёма. Направленный звук пока не реализован.",
+  "config.signalscope.voice_volume": "Громкость сигнала (%)",
+  "config.signalscope.voice_volume.description": "Для направленного звука, который пока не реализован. В текущем PoC не меняет громкость голоса.",
+  "config.signalscope.max_nicknames": "Максимум отображаемых игроков",
+  "config.signalscope.max_nicknames.description": "Максимальное число строк игроков на экране при наличии места.",
+  "config.signalscope.radio_mode": "Активация рации",
+  "config.signalscope.radio_mode.description": "Удерживайте кнопку использования или нажмите её для переключения передачи.",
+  "config.signalscope.radio_mode.hold": "Удержание",
+  "config.signalscope.radio_mode.toggle": "Переключение"
 }
