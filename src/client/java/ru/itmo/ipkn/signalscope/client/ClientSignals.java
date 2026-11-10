@@ -7,8 +7,11 @@ import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 
 import java.util.List;
 
-/** Accessed only on the client thread, including Fabric's payload callback. */
+/**
+ * Accessed only on the client thread, including Fabric's payload callback.
+ */
 public final class ClientSignals {
+
     private List<PlayerSignalsPayload.Signal> players = List.of();
     private ClientLevel level;
     private long receivedAt;

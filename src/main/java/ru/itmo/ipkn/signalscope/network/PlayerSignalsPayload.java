@@ -11,8 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** A complete snapshot replaces the previous one, including departed players. */
+/**
+ * A complete snapshot replaces the previous one, including departed players.
+ */
 public record PlayerSignalsPayload(ResourceLocation dimension, List<Signal> players) implements CustomPacketPayload {
+
     public static final Type<PlayerSignalsPayload> TYPE = new Type<>(Signalscope.id("player_signals"));
     public static final StreamCodec<RegistryFriendlyByteBuf, PlayerSignalsPayload> CODEC =
             StreamCodec.ofMember(PlayerSignalsPayload::write, PlayerSignalsPayload::read);

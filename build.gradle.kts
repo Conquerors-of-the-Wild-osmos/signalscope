@@ -42,7 +42,7 @@ dependencies {
 
     // Simple Voice Chat API and the mod for development runs.
     implementation("de.maxhenkel.voicechat:voicechat-api:${providers.gradleProperty("voicechat_api_version").get()}")
-    modRuntimeOnly(
+    modImplementation(
         "maven.modrinth:simple-voice-chat:fabric-${
             providers.gradleProperty("minecraft_version").get()
         }-${providers.gradleProperty("voicechat_version").get()}"

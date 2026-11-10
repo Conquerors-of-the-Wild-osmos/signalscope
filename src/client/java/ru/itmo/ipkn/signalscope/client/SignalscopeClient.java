@@ -10,6 +10,7 @@ import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 import ru.itmo.ipkn.signalscope.voice.RadioState;
 
 public class SignalscopeClient implements ClientModInitializer {
+
     @Override
     public void onInitializeClient() {
         var signals = new ClientSignals();
