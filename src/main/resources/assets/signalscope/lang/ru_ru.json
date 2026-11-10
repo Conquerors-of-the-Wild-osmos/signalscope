@@ -10,7 +10,7 @@
   "config.signalscope.stable_angle": "Угол стабильного приёма (градусы)",
   "config.signalscope.stable_angle.description": "Максимальный угол стабильного приёма. Должен быть меньше предельного угла приёма.",
   "config.signalscope.reception_angle": "Предельный угол приёма (градусы)",
-  "config.signalscope.reception_angle.description": "Предельный угол приёма звука. При необходимости увеличивается относительно угла стабильного приёма.",
+  "config.signalscope.reception_angle.description": "Угол для визуального лоцирования. Звук затухает до нуля на первой трети пути от угла стабильного приёма.",
   "config.signalscope.voice_volume": "Громкость сигнала (%)",
   "config.signalscope.voice_volume.description": "Максимальная громкость голоса и пассивного сигнала при стабильном приёме.",
   "config.signalscope.max_nicknames": "Максимум отображаемых игроков",

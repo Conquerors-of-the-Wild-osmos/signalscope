@@ -8,7 +8,8 @@ public final class SignalGeometry {
     }
 
     public static double gain(double angle, double stableAngle, double receptionAngle) {
-        double linear = Math.clamp((receptionAngle - angle) / (receptionAngle - stableAngle), 0.0, 1.0);
+        // The outer two thirds remain available for visual tracking, without audio.
+        double linear = Math.clamp(1.0 - 3.0 * (angle - stableAngle) / (receptionAngle - stableAngle), 0.0, 1.0);
         return linear * linear;
     }
 

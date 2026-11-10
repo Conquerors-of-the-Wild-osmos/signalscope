@@ -7,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignalGeometryTest {
     @Test
-    void gainFallsQuadraticallyBetweenAngles() {
-        assertEquals(1, SignalGeometry.gain(0, 10, 90));
-        assertEquals(1, SignalGeometry.gain(10, 10, 90));
-        assertEquals(0.5625, SignalGeometry.gain(30, 10, 90));
-        assertEquals(0.25, SignalGeometry.gain(50, 10, 90));
-        assertEquals(0, SignalGeometry.gain(90, 10, 90));
-        assertEquals(0, SignalGeometry.gain(120, 10, 90));
+    void gainFallsWithinFirstThirdOfReceptionRange() {
+        assertEquals(1, SignalGeometry.gain(0, 10, 100));
+        assertEquals(1, SignalGeometry.gain(10, 10, 100));
+        assertEquals(0.25, SignalGeometry.gain(25, 10, 100));
+        assertEquals(0, SignalGeometry.gain(40, 10, 100));
+        assertEquals(0, SignalGeometry.gain(70, 10, 100));
+        assertEquals(0, SignalGeometry.gain(100, 10, 100));
     }
 
     @Test
