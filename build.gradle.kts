@@ -70,6 +70,12 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// Exercise client-only interpolation without moving rendering state into the common source set.
+sourceSets.test {
+    compileClasspath += sourceSets.getByName("client").output
+    runtimeClasspath += sourceSets.getByName("client").output
+}
+
 tasks.test {
     useJUnitPlatform()
     workingDir = layout.buildDirectory.get().asFile

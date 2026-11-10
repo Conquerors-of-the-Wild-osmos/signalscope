@@ -30,6 +30,7 @@ public final class SignalscopeConfig {
     @SerialEntry public int receptionAngle = 90;
     @SerialEntry public int voiceVolume = 100;
     @SerialEntry public int maxNicknames = 5;
+    @SerialEntry public int hudScale = 100;
     @SerialEntry public boolean toggleRadio = false;
 
     public static SignalscopeConfig get() {
@@ -47,6 +48,7 @@ public final class SignalscopeConfig {
         config.receptionAngle = Math.clamp(config.receptionAngle, config.stableAngle + 1, 180);
         config.voiceVolume = Math.clamp(config.voiceVolume, 0, 100);
         config.maxNicknames = Math.clamp(config.maxNicknames, 1, 100);
+        config.hudScale = Math.clamp(config.hudScale, 50, 200);
     }
 
     private static Option<Integer> slider(String key, int defaultValue, Supplier<Integer> getter,
@@ -69,6 +71,7 @@ public final class SignalscopeConfig {
                         .option(slider("reception_angle", 90, () -> config.receptionAngle, value -> config.receptionAngle = value, 1, 180))
                         .option(slider("voice_volume", 100, () -> config.voiceVolume, value -> config.voiceVolume = value, 0, 100))
                         .option(slider("max_nicknames", 5, () -> config.maxNicknames, value -> config.maxNicknames = value, 1, 10))
+                        .option(slider("hud_scale", 100, () -> config.hudScale, value -> config.hudScale = value, 50, 200))
                         .option(Option.<Boolean>createBuilder()
                                 .name(Component.translatable("config.signalscope.radio_mode"))
                                 .description(OptionDescription.of(Component.translatable("config.signalscope.radio_mode.description")))
