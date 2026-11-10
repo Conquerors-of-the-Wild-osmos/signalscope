@@ -8,7 +8,8 @@ public final class SignalGeometry {
     }
 
     public static double gain(double angle, double stableAngle, double receptionAngle) {
-        return Math.clamp((receptionAngle - angle) / (receptionAngle - stableAngle), 0.0, 1.0);
+        double linear = Math.clamp((receptionAngle - angle) / (receptionAngle - stableAngle), 0.0, 1.0);
+        return linear * linear;
     }
 
     public static double angleDegrees(double lookX, double lookY, double lookZ,
