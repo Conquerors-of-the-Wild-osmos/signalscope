@@ -54,7 +54,8 @@ final class SignalInterpolator {
 
     List<Signal> sample(long now) {
         return tracks.values().stream()
-                .map(track -> new Signal(track.target().id(), track.target().name(), track.positionAt(now)))
+                .map(track -> new Signal(track.target().id(), track.target().name(), track.positionAt(now),
+                        track.target().transmitting()))
                 .toList();
     }
 

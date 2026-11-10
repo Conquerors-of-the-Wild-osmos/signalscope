@@ -2,7 +2,6 @@ package ru.itmo.ipkn.signalscope.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 
 import java.util.LinkedHashMap;
@@ -29,7 +28,6 @@ public final class ClientSignals {
 
     public void accept(PlayerSignalsPayload payload, Minecraft client) {
         if (client.level == null || client.player == null
-                || !SignalscopeItems.holdsSignalscope(client.player)
                 || !payload.dimension().equals(client.level.dimension().location())) {
             clear();
             return;
@@ -79,12 +77,8 @@ public final class ClientSignals {
     }
 
     public void tick(Minecraft client) {
-        if (client.level != level
-                || client.player == null
-                || !client.player.isAlive()
-                || !SignalscopeItems.holdsSignalscope(client.player)
-                || (receivedAt != 0
-                && System.nanoTime() - receivedAt > STALE_NANOS)) {
+        if (client.level != level || client.player == null || !client.player.isAlive()
+                || (receivedAt != 0 && System.nanoTime() - receivedAt > STALE_NANOS)) {
             clear();
         }
     }

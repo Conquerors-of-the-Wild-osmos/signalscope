@@ -1,0 +1,27 @@
+{
+  "beacon_0": {
+    "sounds": [
+      "signalscope:beacon_0"
+    ]
+  },
+  "beacon_1": {
+    "sounds": [
+      "signalscope:beacon_1"
+    ]
+  },
+  "beacon_2": {
+    "sounds": [
+      "signalscope:beacon_2"
+    ]
+  },
+  "beacon_3": {
+    "sounds": [
+      "signalscope:beacon_3"
+    ]
+  },
+  "beacon_4": {
+    "sounds": [
+      "signalscope:beacon_4"
+    ]
+  }
+}
