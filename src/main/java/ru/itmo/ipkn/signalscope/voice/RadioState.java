@@ -7,6 +7,7 @@ import java.util.UUID;
  * Immutable snapshots keep SVC's audio threads away from mutable Minecraft world state.
  */
 public final class RadioState {
+
     private static volatile Snapshot server = new Snapshot(Map.of(), 0);
     private static volatile boolean clientTransmitting;
 
