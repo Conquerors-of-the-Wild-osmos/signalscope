@@ -68,7 +68,7 @@ public final class SignalscopeConfig {
                         .option(slider("stable_angle", 5, () -> config.stableAngle, value -> config.stableAngle = value, 0, 179))
                         .option(slider("reception_angle", 90, () -> config.receptionAngle, value -> config.receptionAngle = value, 1, 180))
                         .option(slider("voice_volume", 100, () -> config.voiceVolume, value -> config.voiceVolume = value, 0, 100))
-                        .option(slider("max_nicknames", 5, () -> config.maxNicknames, value -> config.maxNicknames = value, 1, 100))
+                        .option(slider("max_nicknames", 5, () -> config.maxNicknames, value -> config.maxNicknames = value, 1, 10))
                         .option(Option.<Boolean>createBuilder()
                                 .name(Component.translatable("config.signalscope.radio_mode"))
                                 .description(OptionDescription.of(Component.translatable("config.signalscope.radio_mode.description")))
