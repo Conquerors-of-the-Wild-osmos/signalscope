@@ -11,10 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * A complete snapshot replaces the previous one, including departed players.
- */
-public record PlayerSignalsPayload(ResourceLocation dimension, List<Signal> players) implements CustomPacketPayload {
+public record PlayerSignalsPayload(ResourceLocation dimension, boolean fullSnapshot,
+                                   List<Signal> players, List<UUID> removed
+) implements CustomPacketPayload {
+
+    public static final int MAX_ENTRIES_PER_PACKET = 128;
 
     public static final Type<PlayerSignalsPayload> TYPE = new Type<>(Signalscope.id("player_signals"));
     public static final StreamCodec<RegistryFriendlyByteBuf, PlayerSignalsPayload> CODEC =
@@ -22,32 +23,68 @@ public record PlayerSignalsPayload(ResourceLocation dimension, List<Signal> play
 
     public PlayerSignalsPayload {
         players = List.copyOf(players);
+        removed = List.copyOf(removed);
+
+        if (players.size() + removed.size() > MAX_ENTRIES_PER_PACKET) {
+            throw new IllegalArgumentException("Too many entries in player signals packet");
+        }
+
+        if (fullSnapshot && !removed.isEmpty()) {
+            throw new IllegalArgumentException("Full snapshot cannot contain removed players");
+        }
     }
 
     private static PlayerSignalsPayload read(RegistryFriendlyByteBuf buffer) {
         ResourceLocation dimension = buffer.readResourceLocation();
-        int size = buffer.readVarInt();
-        // Each entry needs at least 16 UUID bytes, a string length, and three doubles.
-        if (size < 0 || size > buffer.readableBytes() / 41) {
-            throw new IllegalArgumentException("Invalid player signal count: " + size);
+        boolean fullSnapshot = buffer.readBoolean();
+
+        int playerCount = buffer.readVarInt();
+        int removedCount = buffer.readVarInt();
+
+        long totalCount = (long) playerCount + removedCount;
+
+        if (playerCount < 0 || removedCount < 0 || totalCount > MAX_ENTRIES_PER_PACKET) {
+            throw new IllegalArgumentException("Invalid player signal count");
         }
-        List<Signal> players = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
+
+        // Minimum size: 41 bytes per signal and 16 bytes per removed UUID.
+        long minimumBytes = (long) playerCount * 41 + (long) removedCount * 16;
+
+        if (minimumBytes > buffer.readableBytes()) {
+            throw new IllegalArgumentException("Incomplete player signals packet");
+        }
+
+        List<Signal> players = new ArrayList<>(playerCount);
+
+        for (int i = 0; i < playerCount; i++) {
             players.add(new Signal(buffer.readUUID(), buffer.readUtf(16),
-                    new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble())));
+                    new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()))
+            );
         }
-        return new PlayerSignalsPayload(dimension, players);
+
+        List<UUID> removed = new ArrayList<>(removedCount);
+
+        for (int i = 0; i < removedCount; i++) {
+            removed.add(buffer.readUUID());
+        }
+
+        return new PlayerSignalsPayload(dimension, fullSnapshot, players, removed);
     }
 
     private void write(RegistryFriendlyByteBuf buffer) {
         buffer.writeResourceLocation(dimension);
+        buffer.writeBoolean(fullSnapshot);
         buffer.writeVarInt(players.size());
+        buffer.writeVarInt(removed.size());
         for (Signal player : players) {
             buffer.writeUUID(player.id());
             buffer.writeUtf(player.name(), 16);
             buffer.writeDouble(player.position().x);
             buffer.writeDouble(player.position().y);
             buffer.writeDouble(player.position().z);
+        }
+        for (UUID id : removed) {
+            buffer.writeUUID(id);
         }
     }
 
@@ -58,7 +95,17 @@ public record PlayerSignalsPayload(ResourceLocation dimension, List<Signal> play
 
     public record Signal(UUID id, String name, Vec3 position) {
         public Signal {
-            if (!Double.isFinite(position.x) || !Double.isFinite(position.y) || !Double.isFinite(position.z)) {
+            if (id == null || name == null || position == null) {
+                throw new IllegalArgumentException("Signal fields cannot be null");
+            }
+
+            if (name.length() > 16) {
+                throw new IllegalArgumentException("Player name is too long");
+            }
+
+            if (!Double.isFinite(position.x)
+                    || !Double.isFinite(position.y)
+                    || !Double.isFinite(position.z)) {
                 throw new IllegalArgumentException("Non-finite signal position");
             }
         }
