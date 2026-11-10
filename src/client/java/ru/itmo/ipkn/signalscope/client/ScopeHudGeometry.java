@@ -1,6 +1,7 @@
 package ru.itmo.ipkn.signalscope.client;
 
 final class ScopeHudGeometry {
+
     static final int ARC_SEGMENTS = 32;
     static final float HALF_STROKE = 0.875F;
 

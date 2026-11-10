@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " I ",
+    "OLO",
+    " I "
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "O": { "item": "minecraft:crying_obsidian" },
+    "L": { "item": "minecraft:lodestone" }
+  },
+  "result": { "id": "signalscope:radio", "count": 1 }
+}

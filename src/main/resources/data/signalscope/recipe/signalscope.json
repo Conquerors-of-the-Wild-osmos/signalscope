@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CI ",
+    "IS ",
+    "  T"
+  ],
+  "key": {
+    "C": { "item": "minecraft:compass" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "S": { "item": "minecraft:spyglass" },
+    "T": { "item": "minecraft:stick" }
+  },
+  "result": { "id": "signalscope:signalscope", "count": 1 }
+}

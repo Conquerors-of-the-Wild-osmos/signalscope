@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class SignalscopeConfig {
+
     private static final ConfigClassHandler<SignalscopeConfig> HANDLER = ConfigClassHandler
             .createBuilder(SignalscopeConfig.class)
             .id(Signalscope.id("client"))
@@ -26,12 +27,18 @@ public final class SignalscopeConfig {
                     .build())
             .build();
 
-    @SerialEntry public int stableAngle = 5;
-    @SerialEntry public int receptionAngle = 90;
-    @SerialEntry public int voiceVolume = 100;
-    @SerialEntry public int maxNicknames = 5;
-    @SerialEntry public int hudScale = 100;
-    @SerialEntry public boolean toggleRadio = false;
+    @SerialEntry
+    public int stableAngle = 5;
+    @SerialEntry
+    public int receptionAngle = 90;
+    @SerialEntry
+    public int voiceVolume = 100;
+    @SerialEntry
+    public int maxNicknames = 5;
+    @SerialEntry
+    public int hudScale = 100;
+    @SerialEntry
+    public boolean toggleRadio = false;
 
     public static SignalscopeConfig get() {
         return HANDLER.instance();
@@ -81,7 +88,10 @@ public final class SignalscopeConfig {
                                                 ? "config.signalscope.radio_mode.toggle" : "config.signalscope.radio_mode.hold")))
                                 .build())
                         .build())
-                .save(() -> { validate(); HANDLER.save(); })
+                .save(() -> {
+                    validate();
+                    HANDLER.save();
+                })
                 .build().generateScreen(parent);
     }
 }

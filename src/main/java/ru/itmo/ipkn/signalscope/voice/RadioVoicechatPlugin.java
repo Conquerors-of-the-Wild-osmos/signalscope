@@ -1,12 +1,7 @@
 package ru.itmo.ipkn.signalscope.voice;
 
 import de.maxhenkel.voicechat.api.VoicechatPlugin;
-import de.maxhenkel.voicechat.api.events.ClientSoundEvent;
-import de.maxhenkel.voicechat.api.events.EventRegistration;
-import de.maxhenkel.voicechat.api.events.MicrophonePacketEvent;
-import de.maxhenkel.voicechat.api.events.VoicechatServerStoppedEvent;
-import de.maxhenkel.voicechat.api.events.VoicechatServerStartedEvent;
-import de.maxhenkel.voicechat.api.events.OpenALSoundEvent;
+import de.maxhenkel.voicechat.api.events.*;
 import org.lwjgl.openal.AL10;
 import ru.itmo.ipkn.signalscope.Signalscope;
 
@@ -14,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public final class RadioVoicechatPlugin implements VoicechatPlugin {
+
     private static final String CATEGORY = "signalscope";
 
     @Override
