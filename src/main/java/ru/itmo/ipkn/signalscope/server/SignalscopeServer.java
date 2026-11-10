@@ -7,19 +7,15 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 import ru.itmo.ipkn.signalscope.network.RadioControlPayload;
 import ru.itmo.ipkn.signalscope.voice.RadioState;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public final class SignalscopeServer {
 
@@ -76,7 +72,6 @@ public final class SignalscopeServer {
         } else if (!player.isSpectator()
                 && player.isAlive()
                 && SignalscopeItems.holdsRadio(player, payload.hand())) {
-
             toggleRequests.put(
                     id,
                     new ToggleRequest(
@@ -198,18 +193,10 @@ public final class SignalscopeServer {
     ) {
         ServerPlayNetworking.send(
                 receiver,
-                new PlayerSignalsPayload(
-                        dimension,
-                        true,
-                        List.copyOf(current.values()),
-                        List.of()
-                )
+                new PlayerSignalsPayload(dimension, true, List.copyOf(current.values()), List.of())
         );
 
-        lastSent.put(
-                receiver.getUUID(),
-                new ReceiverState(dimension, tick, current)
-        );
+        lastSent.put(receiver.getUUID(), new ReceiverState(dimension, tick, current));
     }
 
     private static void sendDelta(
@@ -253,8 +240,7 @@ public final class SignalscopeServer {
 
             boolean changed = oldSignal == null
                     || !oldSignal.name().equals(newSignal.name())
-                    || oldSignal.position().distanceToSqr(newSignal.position())
-                    > POSITION_EPSILON_SQUARED;
+                    || oldSignal.position().distanceToSqr(newSignal.position()) > POSITION_EPSILON_SQUARED;
 
             if (changed) {
                 updated.add(newSignal);
@@ -270,23 +256,10 @@ public final class SignalscopeServer {
 
         ServerPlayNetworking.send(
                 receiver,
-                new PlayerSignalsPayload(
-                        dimension,
-                        false,
-                        updated,
-                        removed
-                )
+                new PlayerSignalsPayload(dimension, false, updated, removed)
         );
 
-        // Store exactly the state represented by the sent delta.
-        lastSent.put(
-                receiver.getUUID(),
-                new ReceiverState(
-                        dimension,
-                        previous.lastFullSyncTick(),
-                        sent
-                )
-        );
+        lastSent.put(receiver.getUUID(), new ReceiverState(dimension, previous.lastFullSyncTick(), sent));
     }
 
     private static void clear() {
@@ -305,10 +278,6 @@ public final class SignalscopeServer {
         }
     }
 
-    private record ToggleRequest(
-            net.minecraft.world.InteractionHand hand,
-            net.minecraft.world.item.ItemStack stack,
-            int expiresAt
-    ) {
+    private record ToggleRequest(InteractionHand hand, ItemStack stack, int expiresAt) {
     }
 }
