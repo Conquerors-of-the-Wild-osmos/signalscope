@@ -6,7 +6,9 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.InteractionHand;
 import ru.itmo.ipkn.signalscope.Signalscope;
 
-/** Client-selected radio state; the server validates the held hand. */
+/**
+ * Client-selected radio state; the server validates the held hand.
+ */
 public record RadioControlPayload(boolean transmitting, InteractionHand hand) implements CustomPacketPayload {
 
     public static final Type<RadioControlPayload> TYPE = new Type<>(Signalscope.id("radio_control"));

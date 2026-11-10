@@ -12,6 +12,11 @@ import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 import ru.itmo.ipkn.signalscope.network.RadioControlPayload;
 import ru.itmo.ipkn.signalscope.voice.RadioState;
+import ru.itmo.ipkn.signalscope.voice.RadioVoicechatPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class SignalscopeClient implements ClientModInitializer {
 
@@ -24,13 +29,13 @@ public class SignalscopeClient implements ClientModInitializer {
                 (payload, context) -> signals.accept(payload, context.client()));
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             signals.clear();
-            RadioState.setClientGains(java.util.Map.of());
+            RadioState.setClientGains(Map.of());
             radio.reset();
             radioSounds.clear(client);
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             signals.clear();
-            RadioState.setClientGains(java.util.Map.of());
+            RadioState.setClientGains(Map.of());
             radio.reset();
             radioSounds.clear(client);
         });
@@ -38,8 +43,8 @@ public class SignalscopeClient implements ClientModInitializer {
             radio.tick(client);
             signals.tick(client);
             var gains = signals.gains(client);
-            var channelGains = new java.util.HashMap<java.util.UUID, Float>();
-            gains.forEach((id, gain) -> channelGains.put(ru.itmo.ipkn.signalscope.voice.RadioVoicechatPlugin.channelId(id), gain));
+            var channelGains = new HashMap<UUID, Float>();
+            gains.forEach((id, gain) -> channelGains.put(RadioVoicechatPlugin.channelId(id), gain));
             RadioState.setClientGains(channelGains);
             radioSounds.tick(client, gains);
         });
