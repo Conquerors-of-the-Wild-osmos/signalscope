@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public final class SignalscopeServer {
+
     private SignalscopeServer() {
     }
 

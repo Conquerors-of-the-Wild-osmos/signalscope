@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import ru.itmo.ipkn.signalscope.Signalscope;
 
 public final class SignalscopeItems {
+
     public static final Item RADIO = Registry.register(BuiltInRegistries.ITEM,
             Signalscope.id("radio"), new RadioItem(new Item.Properties().stacksTo(1)));
     public static final Item SIGNALSCOPE = Registry.register(BuiltInRegistries.ITEM,

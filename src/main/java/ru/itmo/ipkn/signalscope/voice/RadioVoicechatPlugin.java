@@ -5,14 +5,16 @@ import de.maxhenkel.voicechat.api.events.ClientSoundEvent;
 import de.maxhenkel.voicechat.api.events.EventRegistration;
 import de.maxhenkel.voicechat.api.events.MicrophonePacketEvent;
 import de.maxhenkel.voicechat.api.events.VoicechatServerStoppedEvent;
+import ru.itmo.ipkn.signalscope.Signalscope;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public final class RadioVoicechatPlugin implements VoicechatPlugin {
+
     @Override
     public String getPluginId() {
-        return "signalscope";
+        return Signalscope.MOD_ID;
     }
 
     @Override

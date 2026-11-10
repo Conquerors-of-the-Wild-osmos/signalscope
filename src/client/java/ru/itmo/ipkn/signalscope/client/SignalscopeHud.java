@@ -13,6 +13,7 @@ import ru.itmo.ipkn.signalscope.voice.RadioState;
 import java.util.Comparator;
 
 public final class SignalscopeHud {
+
     private static final double LOCK_ANGLE = 5;
     private final ClientSignals signals;
 
