@@ -4,5 +4,21 @@
   "hud.signalscope.transmitting": "Radio: transmitting",
   "hud.signalscope.no_players": "No players in this dimension",
   "hud.signalscope.player": "%s · %s blocks",
-  "hud.signalscope.more": "… +%s"
+  "hud.signalscope.more": "… +%s",
+  "key.categories.signalscope": "Signalscope",
+  "key.signalscope.config": "Open Signalscope settings",
+  "config.signalscope.title": "Signalscope settings",
+  "config.signalscope.category": "General",
+  "config.signalscope.stable_angle": "Stable reception angle (degrees)",
+  "config.signalscope.stable_angle.description": "Maximum angle for stable reception. Must be smaller than the reception angle.",
+  "config.signalscope.reception_angle": "Maximum reception angle (degrees)",
+  "config.signalscope.reception_angle.description": "Maximum angle for reception. Adjusted if necessary to exceed the stable angle. Audio directionality is not implemented yet.",
+  "config.signalscope.voice_volume": "Signal volume (%)",
+  "config.signalscope.voice_volume.description": "Reserved for directional audio, not implemented yet. Does not change voice volume in the current PoC.",
+  "config.signalscope.max_nicknames": "Maximum displayed players",
+  "config.signalscope.max_nicknames.description": "Maximum number of player rows shown on the HUD, if space permits.",
+  "config.signalscope.radio_mode": "Radio activation",
+  "config.signalscope.radio_mode.description": "Hold the use button or press it once to toggle transmission.",
+  "config.signalscope.radio_mode.hold": "Hold",
+  "config.signalscope.radio_mode.toggle": "Toggle"
 }
