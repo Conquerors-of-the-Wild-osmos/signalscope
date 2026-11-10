@@ -29,7 +29,7 @@ public final class ClientSignals {
     private boolean hasSnapshot;
 
     public void accept(PlayerSignalsPayload payload, Minecraft client) {
-        if (client.level == null || client.player == null || !SignalscopeItems.holdsSignalscope(client.player)
+        if (client.level == null || client.player == null
                 || !payload.dimension().equals(client.level.dimension().location())) {
             clear();
             return;
@@ -75,7 +75,6 @@ public final class ClientSignals {
 
     public void tick(Minecraft client) {
         if (client.level != level || client.player == null || !client.player.isAlive()
-                || !SignalscopeItems.holdsSignalscope(client.player)
                 || (receivedAt != 0 && System.nanoTime() - receivedAt > STALE_NANOS)) {
             clear();
         }

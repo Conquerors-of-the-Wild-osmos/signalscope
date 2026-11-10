@@ -6,6 +6,7 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import ru.itmo.ipkn.signalscope.Signalscope;
+import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +25,11 @@ final class RadioSounds {
     }
 
     void tick(Minecraft client, Map<UUID, Float> gains) {
+        if (client.player == null || !client.player.isAlive() || !SignalscopeItems.holdsSignalscope(client.player)) {
+            clear(client);
+            return;
+        }
+
         var active = new HashSet<UUID>();
         for (var signal : signals.players()) {
             if (signal.transmitting() || client.player == null || signal.id().equals(client.player.getUUID())) continue;
