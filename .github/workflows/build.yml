@@ -17,6 +17,9 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
 
+    outputs:
+      artifact_name: ${{ steps.select_jar.outputs.filename }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -37,13 +40,12 @@ jobs:
       - name: Build
         run: ./gradlew --no-daemon clean build
 
-      - name: Prepare production JAR
+      - name: Find production JAR
+        id: select_jar
         shell: bash
         run: |
           set -euo pipefail
-
-          mkdir -p deploy
-
+          
           mapfile -t jars < <(
             find build/libs \
               -maxdepth 1 \
@@ -51,7 +53,8 @@ jobs:
               -name '*.jar' \
               ! -name '*-dev.jar' \
               ! -name '*-sources.jar' \
-              ! -name '*-javadoc.jar'
+              ! -name '*-javadoc.jar' \
+              | sort
           )
 
           if [ "${#jars[@]}" -ne 1 ]; then
@@ -59,16 +62,30 @@ jobs:
             printf '%s\n' "${jars[@]}"
             exit 1
           fi
+          
+          echo "path=${jars[0]}" >> "$GITHUB_OUTPUT"
+          echo "filename=$(basename "${jars[0]}")" >> "$GITHUB_OUTPUT"
 
-          cp "${jars[0]}" deploy/signalscope.jar
-
-      - name: Upload build artifacts
+      - name: Upload build artifact
+        id: upload_jar
         uses: actions/upload-artifact@v7
         with:
-          name: signalscope
-          path: deploy/signalscope.jar
+          name: ${{ steps.select_jar.outputs.filename }}
+          path: ${{ steps.select_jar.outputs.path }}
           retention-days: 7
           if-no-files-found: error
+
+      - name: Add download link to summary
+        env:
+          ARTIFACT_URL: ${{ steps.upload_jar.outputs.artifact-url }}
+        run: |
+          {
+            echo "## Signalscope build"
+            echo ""
+            echo "[Download Signalscope JAR]($ARTIFACT_URL)"
+            echo ""
+            echo "Commit: \`${GITHUB_SHA:0:7}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     name: Deploy to Minecraft Server
@@ -87,7 +104,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
-          name: signalscope
+          name: ${{ needs.build.outputs.artifact_name }}
           path: deploy
 
       - name: Configure SSH
