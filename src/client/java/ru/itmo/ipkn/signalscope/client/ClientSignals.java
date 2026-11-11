@@ -84,6 +84,11 @@ public final class ClientSignals {
         return interpolator.sample(System.nanoTime());
     }
 
+    public boolean isTransmitting(UUID player) {
+        var signal = signals.get(player);
+        return signal != null && signal.transmitting();
+    }
+
     public Map<UUID, Float> gains(Minecraft client) {
         if (client.player == null || !client.player.isAlive() || !SignalscopeItems.holdsSignalscope(client.player)) {
             return Map.of();
