@@ -11,11 +11,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import ru.itmo.ipkn.signalscope.block.SignalBlockerState;
-import ru.itmo.ipkn.signalscope.block.TransmitterBlock;
+import ru.itmo.ipkn.signalscope.block.TransmitterState;
 import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 import ru.itmo.ipkn.signalscope.network.RadioControlPayload;
-import ru.itmo.ipkn.signalscope.signal.SignalScreenGeometry;
 import ru.itmo.ipkn.signalscope.voice.RadioState;
 
 import java.util.*;
@@ -126,10 +125,7 @@ public final class SignalscopeServer {
                 ServerPlayer second = players.get(j);
                 if (first.level() != second.level()) continue;
                 Vec3 to = second.getBoundingBox().getCenter();
-                boolean intersects = screens.stream().anyMatch(screen -> SignalScreenGeometry.blocks(
-                        from.x, from.y, from.z, to.x, to.y, to.z,
-                        screen.pos().getX(), screen.pos().getY(), screen.pos().getZ(), screen.power()));
-                if (intersects) {
+                if (SignalBlockerState.blocks(screens, from, to)) {
                     blocked.computeIfAbsent(first.getUUID(), ignored -> new HashSet<>()).add(second.getUUID());
                     blocked.computeIfAbsent(second.getUUID(), ignored -> new HashSet<>()).add(first.getUUID());
                 }
@@ -201,14 +197,14 @@ public final class SignalscopeServer {
                 ))
                 .toList());
 
-        // ponytail: scanning every loaded transmitter per listener scales as players × blocks;
-        // cache per-dimension sources if large installations make this expensive.
-        for (var pos : TransmitterBlock.activePositions(receiver.serverLevel())) {
+        var screens = SignalBlockerState.get(receiver.serverLevel().getServer()).activeBlocks(receiver.level().dimension());
+        for (var entry : TransmitterState.get(receiver.serverLevel()).active().entrySet()) {
+            var pos = entry.getKey();
+            Vec3 sourcePosition = Vec3.atCenterOf(pos);
+            if (SignalBlockerState.blocks(screens, sourcePosition, receiverPosition)) continue;
             UUID id = UUID.nameUUIDFromBytes(("signalscope:transmitter:" + receiver.level().dimension().location()
                     + ":" + pos.asLong()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            String name = receiver.serverLevel().getBlockEntity(pos) instanceof TransmitterBlock.Entity transmitter
-                    ? transmitter.name() : "";
-            signals.add(new PlayerSignalsPayload.Signal(id, name, Vec3.atCenterOf(pos), false));
+            signals.add(new PlayerSignalsPayload.Signal(id, entry.getValue(), sourcePosition, false));
         }
         signals.sort(Comparator.comparingDouble(signal -> signal.position().distanceToSqr(receiverPosition)));
         if (signals.size() > PlayerSignalsPayload.MAX_ENTRIES_PER_PACKET) {

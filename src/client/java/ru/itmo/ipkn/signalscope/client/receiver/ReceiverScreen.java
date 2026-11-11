@@ -35,7 +35,6 @@ public final class ReceiverScreen extends AbstractContainerScreen<ReceiverMenu> 
         graphics.fill(leftPos + 4, topPos + 4, leftPos + imageWidth - 4, topPos + imageHeight - 4, 0xFF171717);
         int cx = leftPos + 253, cy = topPos + 72, radius = 34;
         int direction = azimuth(), opening = coneAngle();
-        // ponytail: pixel rasterization limits detail to the GUI radius; use vector rendering for larger diagrams.
         for (int dy = -radius; dy <= radius; dy++) {
             int edge = (int) Math.sqrt(radius * radius - dy * dy);
             int runStart = -edge, previousColor = 0;

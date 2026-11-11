@@ -24,7 +24,6 @@ public final class ReceiverRenderer implements BlockEntityRenderer<ReceiverBlock
         double yaw = Math.toRadians(receiver.azimuth());
         double sin = Math.sin(yaw), cos = Math.cos(yaw);
         double threshold = Math.pow(Math.cos(Math.toRadians(receiver.coneAngle() / 2.0)), 2);
-        // ponytail: supersample each pixel on every render; cache the 16x16 image if many receivers hurt FPS.
         for (int z = 0; z < 16; z++) {
             for (int x = 0; x < 16; x++) {
                 int color = compassPixel(x, z, sin, cos, threshold);

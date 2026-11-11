@@ -3,6 +3,7 @@ package ru.itmo.ipkn.signalscope.block;
 import com.mojang.serialization.MapCodec;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -36,13 +37,21 @@ public final class TransmitterBlock extends BaseEntityBlock {
                 BlockEntityType.Builder.of(Entity::new, BLOCK).build(null));
         Registry.register(BuiltInRegistries.ITEM, Signalscope.id("transmitter"), new BlockItem(BLOCK, new Item.Properties()));
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(entries -> entries.accept(BLOCK));
-        ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> chunk.getBlockEntitiesPos().forEach(pos -> {
-            if (chunk.getBlockEntity(pos) instanceof Entity) register(level, pos);
-        }));
+        ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
+            var cached = TransmitterState.get(level);
+            for (var pos : cached.active().keySet()) {
+                if ((pos.getX() >> 4) == chunk.getPos().x && (pos.getZ() >> 4) == chunk.getPos().z
+                        && !chunk.getBlockState(pos).is(BLOCK)) cached.update(pos, false, "");
+            }
+            chunk.getBlockEntitiesPos().forEach(pos -> {
+                if (chunk.getBlockEntity(pos) instanceof Entity) register(level, pos);
+            });
+        });
         ServerChunkEvents.CHUNK_UNLOAD.register((level, chunk) -> {
             var positions = LOADED.get(level);
             if (positions != null) positions.removeIf(pos -> (pos.getX() >> 4) == chunk.getPos().x && (pos.getZ() >> 4) == chunk.getPos().z);
         });
+        ServerTickEvents.END_WORLD_TICK.register(TransmitterBlock::refreshLoaded);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> LOADED.clear());
     }
 
@@ -50,12 +59,22 @@ public final class TransmitterBlock extends BaseEntityBlock {
         LOADED.computeIfAbsent(level, ignored -> new HashSet<>()).add(pos.immutable());
     }
 
-    public static Collection<BlockPos> activePositions(ServerLevel level) {
-        var result = new ArrayList<BlockPos>();
+    private static void refreshLoaded(ServerLevel level) {
+        var state = TransmitterState.get(level);
         for (var pos : LOADED.getOrDefault(level, Set.of())) {
-            if (level.hasChunkAt(pos) && level.getBlockState(pos).is(BLOCK) && level.hasNeighborSignal(pos)) result.add(pos);
+            if (!level.hasChunkAt(pos)) continue;
+            if (!level.getBlockState(pos).is(BLOCK)) {
+                state.update(pos, false, "");
+            } else if (level.hasChunkAt(pos.offset(-2, 0, -2)) && level.hasChunkAt(pos.offset(2, 0, -2))
+                    && level.hasChunkAt(pos.offset(-2, 0, 2)) && level.hasChunkAt(pos.offset(2, 0, 2))
+                    && level.getBlockEntity(pos) instanceof Entity entity) {
+                state.update(pos, level.hasNeighborSignal(pos), entity.name());
+            }
         }
-        return result;
+    }
+
+    public static Collection<BlockPos> activePositions(ServerLevel level) {
+        return TransmitterState.get(level).active().keySet();
     }
 
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return MapCodec.unit(BLOCK); }
@@ -75,6 +94,7 @@ public final class TransmitterBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock()) && level instanceof ServerLevel server) {
             var positions = LOADED.get(server);
             if (positions != null) positions.remove(pos);
+            TransmitterState.get(server).update(pos, false, "");
         }
         super.onRemove(state, level, pos, newState, moved);
     }

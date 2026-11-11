@@ -84,19 +84,18 @@ public final class ReceiverBlockEntity extends BlockEntity
         return saveWithoutMetadata(registries);
     }
 
-    // ponytail: each receiver scans all sources every tick; index sources if installations become large.
     private boolean findSource(ServerLevel level) {
         Vec3 origin = Vec3.atCenterOf(worldPosition);
+        var screens = SignalBlockerState.get(level.getServer()).activeBlocks(level.dimension());
         for (ServerPlayer player : level.players()) {
-            if (player.isAlive() && !player.isSpectator() && SignalscopeItems.hasActiveRadio(player)
-                    && inCone(origin, player.getBoundingBox().getCenter())) {
-                return true;
+            if (player.isAlive() && !player.isSpectator() && SignalscopeItems.hasActiveRadio(player)) {
+                Vec3 source = player.getBoundingBox().getCenter();
+                if (inCone(origin, source) && !SignalBlockerState.blocks(screens, source, origin)) return true;
             }
         }
         for (BlockPos transmitter : TransmitterBlock.activePositions(level)) {
-            if (inCone(origin, Vec3.atCenterOf(transmitter))) {
-                return true;
-            }
+            Vec3 source = Vec3.atCenterOf(transmitter);
+            if (inCone(origin, source) && !SignalBlockerState.blocks(screens, source, origin)) return true;
         }
         return false;
     }
