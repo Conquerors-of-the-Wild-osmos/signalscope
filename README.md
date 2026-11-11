@@ -1,7 +1,12 @@
 # Signalscope
 
+[![Последний релиз](https://img.shields.io/github/v/release/Conquerors-of-the-Wild-osmos/signalscope?display_name=tag&label=Последний%20релиз)](https://github.com/Conquerors-of-the-Wild-osmos/signalscope/releases/latest)
+[![CI/CD](https://github.com/Conquerors-of-the-Wild-osmos/signalscope/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/Conquerors-of-the-Wild-osmos/signalscope/actions/workflows/build.yml)
+
 Fabric-мод для Minecraft 1.21.1: рация передаёт голос через Simple Voice Chat,
 а сигналоскоп показывает направление и расстояние до других игроков.
+
+**[Скачать Signalscope](https://github.com/Conquerors-of-the-Wild-osmos/signalscope/releases/latest)**
 
 ## Proof of Concept
 
@@ -84,10 +89,6 @@ Fabric-мод для Minecraft 1.21.1: рация передаёт голос ч
 если прямая между источником и принимающим игроком или блоком пересекает границу
 куба; два объекта внутри одного куба продолжают связываться. Границы активных
 экранов показываются при открытом экране отладки F3.
-
-## Setup
-
-For setup instructions, please see the [Fabric Documentation page](https://docs.fabricmc.net/develop/getting-started/creating-a-project#setting-up) related to the IDE that you are using.
 
 ### Сборка и запуск
 
@@ -198,7 +199,3 @@ Signalscope пропускает микрофонный звук только в
   для этого улучшения достаточно обновить и перезапустить клиент, сервер менять не нужно.
 - Клиент удаляет цели при смене мира, отключении, убирании сигналоскопа и
   отсутствии обновлений более двух секунд.
-
-## License
-
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
