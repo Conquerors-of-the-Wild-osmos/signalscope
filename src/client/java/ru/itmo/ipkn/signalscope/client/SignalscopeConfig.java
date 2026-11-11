@@ -54,7 +54,7 @@ public final class SignalscopeConfig {
         config.stableAngle = Math.clamp(config.stableAngle, 0, 179);
         config.receptionAngle = Math.clamp(config.receptionAngle, config.stableAngle + 1, 180);
         config.voiceVolume = Math.clamp(config.voiceVolume, 0, 100);
-        config.maxNicknames = Math.clamp(config.maxNicknames, 1, 100);
+        config.maxNicknames = Math.clamp(config.maxNicknames, 1, 10);
         config.hudScale = Math.clamp(config.hudScale, 50, 200);
     }
 
