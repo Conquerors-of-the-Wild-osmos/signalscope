@@ -11,6 +11,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.phys.Vec3;
+import ru.itmo.ipkn.signalscope.signal.SignalScreenGeometry;
 
 import java.util.*;
 
@@ -90,6 +92,16 @@ public final class SignalBlockerState extends SavedData {
             }
         }
         return List.copyOf(result);
+    }
+
+    /** Applies the same screen-boundary rule to player and block endpoints. */
+    public static boolean blocks(Collection<ActiveBlock> screens, Vec3 from, Vec3 to) {
+        for (ActiveBlock screen : screens) {
+            BlockPos pos = screen.pos();
+            if (SignalScreenGeometry.blocks(from.x, from.y, from.z, to.x, to.y, to.z,
+                    pos.getX(), pos.getY(), pos.getZ(), screen.power())) return true;
+        }
+        return false;
     }
 
     public void synchronizeChunk(ServerLevel level, net.minecraft.world.level.chunk.LevelChunk chunk) {

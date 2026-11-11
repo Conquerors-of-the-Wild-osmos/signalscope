@@ -98,7 +98,9 @@ public final class SignalscopeHud {
             }
             if (index < visible) {
                 drawLabel(graphics, client,
-                        Component.translatable("hud.signalscope.player", target.signal().name(), Math.round(target.distance())),
+                        Component.translatable("hud.signalscope.player", target.signal().name().isEmpty()
+                                ? Component.translatable("hud.signalscope.transmitter")
+                                : Component.literal(target.signal().name()), Math.round(target.distance())),
                         centerX, centerY - 26 - index * LABEL_SPACING, color);
             }
         }

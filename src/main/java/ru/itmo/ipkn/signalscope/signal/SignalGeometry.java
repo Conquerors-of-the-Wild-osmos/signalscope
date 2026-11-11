@@ -14,6 +14,16 @@ public final class SignalGeometry {
         return linear * linear;
     }
 
+    /** Tests a position against a cone whose azimuth is clockwise from north. */
+    public static boolean inCone(double azimuth, double elevation, double fullAngle,
+                                 double deltaX, double deltaY, double deltaZ) {
+        double yaw = Math.toRadians(azimuth);
+        double pitch = Math.toRadians(elevation);
+        double horizontal = Math.cos(pitch);
+        return angleDegrees(Math.sin(yaw) * horizontal, Math.sin(pitch), -Math.cos(yaw) * horizontal,
+                deltaX, deltaY, deltaZ) <= fullAngle / 2.0 + 1.0e-9;
+    }
+
     public static double angleDegrees(double lookX, double lookY, double lookZ,
                                       double deltaX, double deltaY, double deltaZ) {
         double lookLength = Math.sqrt(lookX * lookX + lookY * lookY + lookZ * lookZ);

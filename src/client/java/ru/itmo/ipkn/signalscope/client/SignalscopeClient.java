@@ -6,6 +6,9 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.MenuScreens;
+import ru.itmo.ipkn.signalscope.client.receiver.ReceiverScreen;
+import ru.itmo.ipkn.signalscope.menu.ReceiverMenus;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +27,12 @@ public class SignalscopeClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+                ru.itmo.ipkn.signalscope.block.ReceiverBlocks.RECEIVER_ENTITY,
+                ru.itmo.ipkn.signalscope.client.receiver.ReceiverRenderer::new);
+        MenuScreens.register(ReceiverMenus.RECEIVER, ReceiverScreen::new);
+        MenuScreens.register(ru.itmo.ipkn.signalscope.menu.TransmitterMenu.TYPE,
+                ru.itmo.ipkn.signalscope.client.receiver.TransmitterScreen::new);
         var signals = new ClientSignals();
         var radio = new RadioController();
         var radioSounds = new RadioSounds(signals);

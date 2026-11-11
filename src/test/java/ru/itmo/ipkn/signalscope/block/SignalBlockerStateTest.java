@@ -4,12 +4,34 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignalBlockerStateTest {
+
+    @Test
+    void screensApplyToPlayerAndBlockEndpoints() {
+        var screens = List.of(new SignalBlockerState.ActiveBlock(BlockPos.ZERO, 2));
+        Vec3 playerInside = new Vec3(0.5, 0.9, 0.5);
+        Vec3 blockInside = Vec3.atCenterOf(BlockPos.ZERO);
+        Vec3 playerOutside = new Vec3(5.5, 0.9, 0.5);
+        Vec3 blockOutside = Vec3.atCenterOf(new BlockPos(5, 0, 0));
+        for (Vec3 source : List.of(playerInside, blockInside)) {
+            for (Vec3 receiver : List.of(playerOutside, blockOutside)) {
+                assertTrue(SignalBlockerState.blocks(screens, source, receiver));
+                assertTrue(SignalBlockerState.blocks(screens, receiver, source));
+            }
+        }
+        assertFalse(SignalBlockerState.blocks(screens, playerInside, blockInside));
+        assertFalse(SignalBlockerState.blocks(List.of(), playerInside, playerOutside));
+        assertTrue(SignalBlockerState.blocks(screens, new Vec3(-5, 0.5, 0.5), blockOutside));
+        assertFalse(SignalBlockerState.blocks(screens, new Vec3(-5, 4, 0.5), new Vec3(5, 4, 0.5)));
+    }
 
     @Test
     void persistsPowerAndDimensionAcrossReload() {
