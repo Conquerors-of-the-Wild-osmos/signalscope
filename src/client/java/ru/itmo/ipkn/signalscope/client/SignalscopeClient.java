@@ -27,6 +27,8 @@ public class SignalscopeClient implements ClientModInitializer {
         var signals = new ClientSignals();
         var radio = new RadioController();
         var radioSounds = new RadioSounds(signals);
+        var signalBlockerRenderer = new SignalBlockerRenderer();
+        signalBlockerRenderer.initialize();
         ItemProperties.register(SignalscopeItems.RADIO, Signalscope.id("transmitting"),
                 (stack, level, entity, seed) -> {
                     // Only held radios animate; dropped items and spare inventory stacks stay still.
@@ -47,12 +49,14 @@ public class SignalscopeClient implements ClientModInitializer {
             RadioState.setClientGains(Map.of());
             radio.reset();
             radioSounds.clear(client);
+            signalBlockerRenderer.clear();
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             signals.clear();
             RadioState.setClientGains(Map.of());
             radio.reset();
             radioSounds.clear(client);
+            signalBlockerRenderer.clear();
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             radio.tick(client);

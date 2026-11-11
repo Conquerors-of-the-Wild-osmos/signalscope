@@ -1,6 +1,7 @@
 package ru.itmo.ipkn.signalscope.voice;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -45,7 +46,14 @@ public final class RadioState {
         return clientTransmitting;
     }
 
-    public record Player(String dimension, boolean transmitting) {
+    public record Player(String dimension, boolean transmitting, Set<UUID> blockedReceivers) {
+        public Player {
+            blockedReceivers = Set.copyOf(blockedReceivers);
+        }
+
+        public Player(String dimension, boolean transmitting) {
+            this(dimension, transmitting, Set.of());
+        }
     }
 
     private record Snapshot(Map<UUID, Player> players, long updatedAt) {

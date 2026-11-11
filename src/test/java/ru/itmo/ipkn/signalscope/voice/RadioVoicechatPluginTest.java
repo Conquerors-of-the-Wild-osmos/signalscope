@@ -12,15 +12,12 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RadioVoicechatPluginTest {
+
     private final RadioVoicechatPlugin plugin = new RadioVoicechatPlugin();
     private final UUID speaker = UUID.randomUUID();
     private final Map<UUID, RadioState.Player> players = new HashMap<>();
@@ -65,6 +62,16 @@ class RadioVoicechatPluginTest {
         assertTrue(delivered.containsAll(List.of(first, second)));
         assertNotEquals(speaker, channel, "Radio must use a separate audio channel");
         assertEquals(RadioVoicechatPlugin.channelId(speaker), channel);
+    }
+
+    @Test
+    void screenBlocksOnlySelectedReceivers() {
+        addPlayer(speaker, "overworld", true, true, false);
+        UUID blocked = addReceiver("overworld", true, false);
+        UUID allowed = addReceiver("overworld", true, false);
+        players.put(speaker, new RadioState.Player("overworld", true, java.util.Set.of(blocked)));
+        route();
+        assertEquals(List.of(allowed), delivered);
     }
 
     @Test

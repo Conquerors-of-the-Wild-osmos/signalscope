@@ -65,7 +65,8 @@ public final class RadioVoicechatPlugin implements VoicechatPlugin {
                 .build();
         var api = event.getVoicechat();
         for (var entry : players.entrySet()) {
-            if (entry.getKey().equals(senderId) || !entry.getValue().dimension().equals(source.dimension())) {
+            if (entry.getKey().equals(senderId) || !entry.getValue().dimension().equals(source.dimension())
+                    || source.blockedReceivers().contains(entry.getKey())) {
                 continue;
             }
             var receiver = api.getConnectionOf(entry.getKey());
