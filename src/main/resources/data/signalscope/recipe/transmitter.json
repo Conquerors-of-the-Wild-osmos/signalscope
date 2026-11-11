@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":[" I ","OLO"," I "],"key":{"I":{"item":"minecraft:iron_block"},"O":{"item":"minecraft:crying_obsidian"},"L":{"item":"minecraft:lodestone"}},"result":{"id":"signalscope:transmitter","count":1}}

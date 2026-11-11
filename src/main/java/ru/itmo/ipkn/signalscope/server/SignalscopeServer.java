@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import ru.itmo.ipkn.signalscope.block.SignalBlockerState;
+import ru.itmo.ipkn.signalscope.block.TransmitterBlock;
 import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 import ru.itmo.ipkn.signalscope.network.RadioControlPayload;
@@ -180,7 +181,7 @@ public final class SignalscopeServer {
 
         // Only players in the receiver's dimension are visible.
         // Keep the nearest 128 to enforce the packet limit.
-        List<PlayerSignalsPayload.Signal> signals = players.stream()
+        List<PlayerSignalsPayload.Signal> signals = new ArrayList<>(players.stream()
                 .filter(player -> player != receiver
                         && player.level() == receiver.level())
                 .filter(player -> player.isAlive() && !player.isSpectator())
@@ -198,7 +199,19 @@ public final class SignalscopeServer {
                         player.getBoundingBox().getCenter(),
                         radioPlayers.get(player.getUUID()).transmitting()
                 ))
-                .toList();
+                .toList());
+
+        // ponytail: scanning every loaded transmitter per listener scales as players × blocks;
+        // cache per-dimension sources if large installations make this expensive.
+        for (var pos : TransmitterBlock.activePositions(receiver.serverLevel())) {
+            UUID id = UUID.nameUUIDFromBytes(("signalscope:transmitter:" + receiver.level().dimension().location()
+                    + ":" + pos.asLong()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            signals.add(new PlayerSignalsPayload.Signal(id, "Transmitter", Vec3.atCenterOf(pos), false));
+        }
+        signals.sort(Comparator.comparingDouble(signal -> signal.position().distanceToSqr(receiverPosition)));
+        if (signals.size() > PlayerSignalsPayload.MAX_ENTRIES_PER_PACKET) {
+            signals = signals.subList(0, PlayerSignalsPayload.MAX_ENTRIES_PER_PACKET);
+        }
 
         Map<UUID, PlayerSignalsPayload.Signal> result = new LinkedHashMap<>();
 

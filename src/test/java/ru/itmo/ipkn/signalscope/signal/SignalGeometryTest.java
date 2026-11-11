@@ -17,6 +17,16 @@ class SignalGeometryTest {
     }
 
     @Test
+    void receiverConeUsesNorthClockwiseAndFullOpeningAngle() {
+        assertTrue(SignalGeometry.inCone(0, 0, 60, 0, 0, -1));
+        assertTrue(SignalGeometry.inCone(90, 0, 60, 1, 0, 0));
+        assertTrue(SignalGeometry.inCone(0, 90, 1, 0, 1, 0));
+        assertTrue(SignalGeometry.inCone(0, 0, 60, 0.5, 0, -Math.sqrt(3) / 2));
+        assertTrue(!SignalGeometry.inCone(0, 0, 60, 1, 0, -1));
+        assertTrue(!SignalGeometry.inCone(0, -90, 1, 0, 1, 0));
+    }
+
+    @Test
     void distinguishesAheadBehindAndAbove() {
         assertEquals(0, SignalGeometry.angleDegrees(0, 0, 1, 0, 0, 10), 1.0e-6);
         assertEquals(180, SignalGeometry.angleDegrees(0, 0, 1, 0, 0, -10), 1.0e-6);
