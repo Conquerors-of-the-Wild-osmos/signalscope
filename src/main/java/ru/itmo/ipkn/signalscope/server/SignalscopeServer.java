@@ -206,7 +206,9 @@ public final class SignalscopeServer {
         for (var pos : TransmitterBlock.activePositions(receiver.serverLevel())) {
             UUID id = UUID.nameUUIDFromBytes(("signalscope:transmitter:" + receiver.level().dimension().location()
                     + ":" + pos.asLong()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            signals.add(new PlayerSignalsPayload.Signal(id, "Transmitter", Vec3.atCenterOf(pos), false));
+            String name = receiver.serverLevel().getBlockEntity(pos) instanceof TransmitterBlock.Entity transmitter
+                    ? transmitter.name() : "";
+            signals.add(new PlayerSignalsPayload.Signal(id, name, Vec3.atCenterOf(pos), false));
         }
         signals.sort(Comparator.comparingDouble(signal -> signal.position().distanceToSqr(receiverPosition)));
         if (signals.size() > PlayerSignalsPayload.MAX_ENTRIES_PER_PACKET) {

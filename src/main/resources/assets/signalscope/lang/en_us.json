@@ -4,6 +4,8 @@
   "gui.signalscope.receiver.elevation": "Elevation: %s°",
   "gui.signalscope.receiver.cone_angle": "Cone angle: %s°",
   "block.signalscope.transmitter": "Signal Transmitter",
+  "gui.signalscope.transmitter.name": "Transmitter name",
+  "hud.signalscope.transmitter": "Transmitter",
   "item.signalscope.radio": "Radio",
   "item.signalscope.signalscope": "Signalscope",
   "block.signalscope.signal_blocker": "Signal Blocker",

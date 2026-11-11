@@ -69,6 +69,19 @@ public final class ReceiverBlockEntity extends BlockEntity
         this.elevation = Math.clamp(elevation, -90, 90);
         this.coneAngle = Math.clamp(coneAngle, 1, 180);
         setChanged();
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 2);
+        }
+    }
+
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
     }
 
     // ponytail: each receiver scans all sources every tick; index sources if installations become large.
@@ -119,6 +132,8 @@ public final class ReceiverBlockEntity extends BlockEntity
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        setSettings(tag.getInt("azimuth"), tag.getInt("elevation"), tag.getInt("cone_angle"));
+        azimuth = Math.floorMod(tag.getInt("azimuth"), 360);
+        elevation = Math.clamp(tag.getInt("elevation"), -90, 90);
+        coneAngle = Math.clamp(tag.getInt("cone_angle"), 1, 180);
     }
 }

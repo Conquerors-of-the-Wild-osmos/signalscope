@@ -27,6 +27,7 @@ public class Signalscope implements ModInitializer {
         SignalscopeBlocks.initialize();
         SignalscopeItems.initialize();
         TransmitterBlock.initialize();
+        ru.itmo.ipkn.signalscope.menu.TransmitterMenu.initialize();
         ReceiverBlocks.initialize();
         ReceiverMenus.initialize();
         PayloadTypeRegistry.playC2S().register(ReceiverSettingsPayload.TYPE, ReceiverSettingsPayload.CODEC);

@@ -27,7 +27,12 @@ public class SignalscopeClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+                ru.itmo.ipkn.signalscope.block.ReceiverBlocks.RECEIVER_ENTITY,
+                ru.itmo.ipkn.signalscope.client.receiver.ReceiverRenderer::new);
         MenuScreens.register(ReceiverMenus.RECEIVER, ReceiverScreen::new);
+        MenuScreens.register(ru.itmo.ipkn.signalscope.menu.TransmitterMenu.TYPE,
+                ru.itmo.ipkn.signalscope.client.receiver.TransmitterScreen::new);
         var signals = new ClientSignals();
         var radio = new RadioController();
         var radioSounds = new RadioSounds(signals);

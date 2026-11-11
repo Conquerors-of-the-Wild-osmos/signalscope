@@ -4,6 +4,8 @@
   "gui.signalscope.receiver.elevation": "Высота: %s°",
   "gui.signalscope.receiver.cone_angle": "Угол конуса: %s°",
   "block.signalscope.transmitter": "Передатчик сигнала",
+  "gui.signalscope.transmitter.name": "Имя передатчика",
+  "hud.signalscope.transmitter": "Передатчик",
   "item.signalscope.radio": "Рация",
   "item.signalscope.signalscope": "Сигналоскоп",
   "block.signalscope.signal_blocker": "Блокировщик сигнала",

@@ -61,6 +61,12 @@ public final class TransmitterBlock extends BaseEntityBlock {
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return MapCodec.unit(BLOCK); }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new Entity(pos, state); }
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+    @Override protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+            net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+                && level.getBlockEntity(pos) instanceof Entity entity) serverPlayer.openMenu(entity);
+        return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+    }
     @Override public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moved) {
         super.onPlace(state, level, pos, oldState, moved);
         if (level instanceof ServerLevel server && !oldState.is(state.getBlock())) register(server, pos);
@@ -73,7 +79,34 @@ public final class TransmitterBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, newState, moved);
     }
 
-    public static final class Entity extends BlockEntity {
+    public static final class Entity extends BlockEntity implements
+            net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory<ru.itmo.ipkn.signalscope.menu.TransmitterMenu.Data> {
+        private String name = "";
         public Entity(BlockPos pos, BlockState state) { super(ENTITY, pos, state); }
+        public String name() { return name; }
+        public void setName(String name) {
+            this.name = net.minecraft.util.StringUtil.filterText(name).strip();
+            setChanged();
+        }
+        @Override public net.minecraft.network.chat.Component getDisplayName() {
+            return net.minecraft.network.chat.Component.translatable("block.signalscope.transmitter");
+        }
+        @Override public ru.itmo.ipkn.signalscope.menu.TransmitterMenu.Data getScreenOpeningData(net.minecraft.server.level.ServerPlayer player) {
+            return new ru.itmo.ipkn.signalscope.menu.TransmitterMenu.Data(worldPosition, name);
+        }
+        @Override public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id,
+                net.minecraft.world.entity.player.Inventory inventory, net.minecraft.world.entity.player.Player player) {
+            return new ru.itmo.ipkn.signalscope.menu.TransmitterMenu(id,
+                    new ru.itmo.ipkn.signalscope.menu.TransmitterMenu.Data(worldPosition, name));
+        }
+        @Override protected void saveAdditional(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+            super.saveAdditional(tag, registries);
+            tag.putString("name", name);
+        }
+        @Override protected void loadAdditional(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+            super.loadAdditional(tag, registries);
+            String loaded = net.minecraft.util.StringUtil.filterText(tag.getString("name")).strip();
+            name = loaded.substring(0, Math.min(16, loaded.length()));
+        }
     }
 }
