@@ -14,22 +14,35 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import ru.itmo.ipkn.signalscope.Signalscope;
 
 import java.util.*;
 
 public final class TransmitterBlock extends BaseEntityBlock {
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final TransmitterBlock BLOCK = new TransmitterBlock();
     public static BlockEntityType<Entity> ENTITY;
     private static final Map<ServerLevel, Set<BlockPos>> LOADED = new WeakHashMap<>();
 
-    private TransmitterBlock() { super(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.0F)); }
+    private TransmitterBlock() {
+        super(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.0F));
+        registerDefaultState(stateDefinition.any().setValue(POWERED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(POWERED);
+    }
 
     public static void initialize() {
         Registry.register(BuiltInRegistries.BLOCK, Signalscope.id("transmitter"), BLOCK);
@@ -68,7 +81,12 @@ public final class TransmitterBlock extends BaseEntityBlock {
             } else if (level.hasChunkAt(pos.offset(-2, 0, -2)) && level.hasChunkAt(pos.offset(2, 0, -2))
                     && level.hasChunkAt(pos.offset(-2, 0, 2)) && level.hasChunkAt(pos.offset(2, 0, 2))
                     && level.getBlockEntity(pos) instanceof Entity entity) {
-                state.update(pos, level.hasNeighborSignal(pos), entity.name());
+                boolean powered = level.hasNeighborSignal(pos);
+                state.update(pos, powered, entity.name());
+                BlockState blockState = level.getBlockState(pos);
+                if (blockState.getValue(POWERED) != powered) {
+                    level.setBlock(pos, blockState.setValue(POWERED, powered), Block.UPDATE_CLIENTS);
+                }
             }
         }
     }

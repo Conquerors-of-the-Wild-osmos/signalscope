@@ -1,1 +1,6 @@
-{"parent":"minecraft:block/cube_all","textures":{"all":"minecraft:block/iron_block"}}
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "signalscope:block/transmitter_off"
+  }
+}
