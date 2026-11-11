@@ -231,6 +231,18 @@ jobs:
           name: ${{ needs.build.outputs.artifact_name }}
           path: release
 
+      - name: Clear stale release body on re-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ needs.build.outputs.mod_version }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes ""
+            echo "::notice::Cleared existing release body for $TAG."
+          else
+            echo "No existing release for $TAG; creating fresh."
+          fi
+
       - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v3
         with:
