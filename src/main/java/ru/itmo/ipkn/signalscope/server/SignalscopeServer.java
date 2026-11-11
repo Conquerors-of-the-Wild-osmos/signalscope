@@ -10,9 +10,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import ru.itmo.ipkn.signalscope.block.SignalBlockerState;
 import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 import ru.itmo.ipkn.signalscope.network.RadioControlPayload;
+import ru.itmo.ipkn.signalscope.signal.SignalScreenGeometry;
 import ru.itmo.ipkn.signalscope.voice.RadioState;
 
 import java.util.*;
@@ -113,6 +115,27 @@ public final class SignalscopeServer {
             );
         }
 
+        Map<UUID, Set<UUID>> blocked = new HashMap<>();
+        for (int i = 0; i < players.size(); i++) {
+            ServerPlayer first = players.get(i);
+            var screens = SignalBlockerState.get(server).activeBlocks(first.level().dimension());
+            if (screens.isEmpty()) continue;
+            Vec3 from = first.getBoundingBox().getCenter();
+            for (int j = i + 1; j < players.size(); j++) {
+                ServerPlayer second = players.get(j);
+                if (first.level() != second.level()) continue;
+                Vec3 to = second.getBoundingBox().getCenter();
+                boolean intersects = screens.stream().anyMatch(screen -> SignalScreenGeometry.blocks(
+                        from.x, from.y, from.z, to.x, to.y, to.z,
+                        screen.pos().getX(), screen.pos().getY(), screen.pos().getZ(), screen.power()));
+                if (intersects) {
+                    blocked.computeIfAbsent(first.getUUID(), ignored -> new HashSet<>()).add(second.getUUID());
+                    blocked.computeIfAbsent(second.getUUID(), ignored -> new HashSet<>()).add(first.getUUID());
+                }
+            }
+        }
+        radioPlayers.replaceAll((id, player) -> new RadioState.Player(
+                player.dimension(), player.transmitting(), blocked.getOrDefault(id, Set.of())));
         RadioState.publish(radioPlayers);
 
         // Network synchronization is throttled to once every 5 ticks.
@@ -162,6 +185,7 @@ public final class SignalscopeServer {
                         && player.level() == receiver.level())
                 .filter(player -> player.isAlive() && !player.isSpectator())
                 .filter(SignalscopeItems::hasActiveRadio)
+                .filter(player -> !radioPlayers.get(player.getUUID()).blockedReceivers().contains(receiver.getUUID()))
                 .sorted(Comparator.comparingDouble(
                         (ServerPlayer player) ->
                                 player.getBoundingBox().getCenter()

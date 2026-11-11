@@ -3,7 +3,8 @@
 	"package": "ru.itmo.ipkn.signalscope.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"PTTMicrophoneProcessorMixin"
+		"PTTMicrophoneProcessorMixin",
+		"ClientLevelMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "signalscope:block/signal_blocker" }
+  }
+}
