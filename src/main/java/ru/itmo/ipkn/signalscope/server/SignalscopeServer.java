@@ -108,8 +108,7 @@ public final class SignalscopeServer {
                     new RadioState.Player(
                             player.level().dimension().location().toString(),
                             !player.isSpectator()
-                                    && (SignalscopeItems.isTransmitting(player)
-                                    || toggleTransmitting)
+                                    && (SignalscopeItems.isTransmitting(player) || toggleTransmitting)
                     )
             );
         }

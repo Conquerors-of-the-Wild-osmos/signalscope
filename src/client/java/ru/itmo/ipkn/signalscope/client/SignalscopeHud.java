@@ -83,7 +83,7 @@ public final class SignalscopeHud {
 
         // Labels stack above the crosshair; all signal arcs share the crosshair's horizontal axis.
         int visible = Math.min(ordered.size(),
-                Math.min(config.maxNicknames, Math.max(1, ((int) centerY - 38) / LABEL_SPACING)));
+                Math.clamp(((int) centerY - 38) / LABEL_SPACING, 1, config.maxNicknames));
         boolean hasLockedTarget = false;
         for (int index = 0; index < ordered.size(); index++) {
             Target target = ordered.get(index);
