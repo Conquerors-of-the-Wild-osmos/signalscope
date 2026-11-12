@@ -5,14 +5,28 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class SignalBlockerStateTest {
+
+    @Test
+    void indexedScreensRefreshAfterPowerChanges() {
+        var state = new SignalBlockerState();
+        BlockPos pos = new BlockPos(16, 64, -1);
+        assertTrue(state.activeBlocks(Level.OVERWORLD).isEmpty());
+        state.setPower(Level.OVERWORLD.location(), pos, 3);
+        var previous = state.activeBlocks(Level.OVERWORLD);
+        assertEquals(List.of(new SignalBlockerState.ActiveBlock(pos, 3)), previous);
+        state.setPower(Level.OVERWORLD.location(), pos, 5);
+        assertEquals(List.of(new SignalBlockerState.ActiveBlock(pos, 5)), state.activeBlocks(Level.OVERWORLD));
+        assertEquals(List.of(new SignalBlockerState.ActiveBlock(pos, 3)), previous);
+        state.setPower(Level.OVERWORLD.location(), pos, 0);
+        assertTrue(state.activeBlocks(Level.OVERWORLD).isEmpty());
+    }
 
     @Test
     void screensApplyToPlayerAndBlockEndpoints() {

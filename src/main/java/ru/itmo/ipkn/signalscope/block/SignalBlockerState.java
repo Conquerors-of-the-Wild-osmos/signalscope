@@ -1,6 +1,7 @@
 package ru.itmo.ipkn.signalscope.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -9,7 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.phys.Vec3;
 import ru.itmo.ipkn.signalscope.signal.SignalScreenGeometry;
@@ -34,12 +37,14 @@ public final class SignalBlockerState extends SavedData {
     );
 
     private final Map<Key, Integer> powers = new HashMap<>();
+    private Map<ResourceLocation, List<ActiveBlock>> byDimension;
+    private Map<ChunkKey, List<Key>> byChunk;
 
     public static SignalBlockerState get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(FACTORY, DATA_ID);
     }
 
-    static SignalBlockerState load(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+    static SignalBlockerState load(CompoundTag tag, HolderLookup.Provider registries) {
         SignalBlockerState state = new SignalBlockerState();
         ListTag entries = tag.getList(ENTRIES_TAG, Tag.TAG_COMPOUND);
         for (int i = 0; i < entries.size(); i++) {
@@ -54,7 +59,7 @@ public final class SignalBlockerState extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         ListTag entries = new ListTag();
         for (var entry : powers.entrySet()) {
             CompoundTag saved = new CompoundTag();
@@ -68,13 +73,19 @@ public final class SignalBlockerState extends SavedData {
     }
 
     public void setPower(ServerLevel level, BlockPos position, int power) {
-        Key key = new Key(level.dimension().location(), position.immutable());
+        setPower(level.dimension().location(), position, power);
+    }
+
+    void setPower(ResourceLocation dimension, BlockPos position, int power) {
+        Key key = new Key(dimension, position.immutable());
         if (power > 0) {
             Integer oldPower = powers.put(key, power);
             if (oldPower == null || oldPower != power) {
+                invalidateIndex();
                 setDirty();
             }
         } else if (powers.remove(key) != null) {
+            invalidateIndex();
             setDirty();
         }
     }
@@ -84,17 +95,34 @@ public final class SignalBlockerState extends SavedData {
     }
 
     public Collection<ActiveBlock> activeBlocks(ResourceKey<Level> dimension) {
-        List<ActiveBlock> result = new ArrayList<>();
-        ResourceLocation dimensionId = dimension.location();
-        for (var entry : powers.entrySet()) {
-            if (entry.getKey().dimension().equals(dimensionId)) {
-                result.add(new ActiveBlock(entry.getKey().position(), entry.getValue()));
-            }
-        }
-        return List.copyOf(result);
+        ensureIndex();
+        return byDimension.getOrDefault(dimension.location(), List.of());
     }
 
-    /** Applies the same screen-boundary rule to player and block endpoints. */
+    private void invalidateIndex() {
+        byDimension = null;
+        byChunk = null;
+    }
+
+    private void ensureIndex() {
+        if (byDimension != null) return;
+        Map<ResourceLocation, List<ActiveBlock>> dimensions = new HashMap<>();
+        Map<ChunkKey, List<Key>> chunks = new HashMap<>();
+        powers.forEach((key, power) -> {
+            dimensions.computeIfAbsent(key.dimension(), ignored -> new ArrayList<>())
+                    .add(new ActiveBlock(key.position(), power));
+            chunks.computeIfAbsent(new ChunkKey(key.dimension(), new ChunkPos(key.position())),
+                    ignored -> new ArrayList<>()).add(key);
+        });
+        dimensions.replaceAll((key, entries) -> List.copyOf(entries));
+        chunks.replaceAll((key, entries) -> List.copyOf(entries));
+        byDimension = dimensions;
+        byChunk = chunks;
+    }
+
+    /**
+     * Applies the same screen-boundary rule to player and block endpoints.
+     */
     public static boolean blocks(Collection<ActiveBlock> screens, Vec3 from, Vec3 to) {
         for (ActiveBlock screen : screens) {
             BlockPos pos = screen.pos();
@@ -104,11 +132,9 @@ public final class SignalBlockerState extends SavedData {
         return false;
     }
 
-    public void synchronizeChunk(ServerLevel level, net.minecraft.world.level.chunk.LevelChunk chunk) {
-        List<Key> entries = powers.keySet().stream()
-                .filter(key -> key.dimension().equals(level.dimension().location()))
-                .filter(key -> new net.minecraft.world.level.ChunkPos(key.position()).equals(chunk.getPos()))
-                .toList();
+    public void synchronizeChunk(ServerLevel level, LevelChunk chunk) {
+        ensureIndex();
+        List<Key> entries = byChunk.getOrDefault(new ChunkKey(level.dimension().location(), chunk.getPos()), List.of());
         for (Key key : entries) {
             var blockState = chunk.getBlockState(key.position());
             if (blockState.is(SignalBlockerBlock.INSTANCE)) {
@@ -123,5 +149,8 @@ public final class SignalBlockerState extends SavedData {
     }
 
     private record Key(ResourceLocation dimension, BlockPos position) {
+    }
+
+    private record ChunkKey(ResourceLocation dimension, ChunkPos chunk) {
     }
 }
