@@ -1,3 +1,8 @@
 {
-  "parent": "minecraft:block/observer"
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "signalscope:block/receiver_side",
+    "top": "signalscope:block/receiver_top",
+    "bottom": "signalscope:block/receiver_bottom"
+  }
 }
