@@ -211,7 +211,7 @@ jobs:
     name: Create or Update GitHub Release
     runs-on: ubuntu-latest
 
-    needs: build
+    needs: [ build, compose-test ]
 
     if: >
       github.event_name == 'push' &&
@@ -226,6 +226,13 @@ jobs:
         with:
           name: ${{ needs.build.outputs.artifact_name }}
           path: release
+
+      - name: Prepare stable Docker asset
+        env:
+          JAR_NAME: ${{ needs.build.outputs.artifact_name }}
+        run: |
+          set -euo pipefail
+          cp "release/$JAR_NAME" release/signalscope-fabric.jar
 
       - name: Clear stale release body on re-run
         env:
@@ -246,7 +253,95 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: Signalscope v${{ needs.build.outputs.mod_version }}
           generate_release_notes: true
-          files: release/${{ needs.build.outputs.artifact_name }}
+          files: |
+            release/${{ needs.build.outputs.artifact_name }}
+            release/signalscope.jar
           overwrite_files: true
           fail_on_unmatched_files: true
           make_latest: true
+
+  compose-test:
+    name: Docker Compose smoke test
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+
+    env:
+      MEMORY: "4G"
+      SIGNALSCOPE_MODS: "/mods"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: mods
+
+      - name: Prepare test mod
+        env:
+          JAR_NAME: ${{ needs.build.outputs.artifact_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p mods
+          mv "mods/$JAR_NAME" mods/signalscope.jar
+
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+      - name: Start Minecraft server
+        run: docker compose up -d --pull always
+
+      - name: Wait for Minecraft server health
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          container_id="$(docker compose ps -q mc)"
+
+          if [[ -z "$container_id" ]]; then
+            echo "Minecraft container was not created."
+            exit 1
+          fi
+
+          for attempt in $(seq 1 90); do
+            state="$(docker inspect \
+              --format '{{.State.Status}}' "$container_id")"
+
+            health="$(docker inspect \
+              --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' \
+              "$container_id")"
+
+            echo "Attempt $attempt: state=$state, health=$health"
+
+            if [[ "$health" == "healthy" ]]; then
+              echo "Minecraft server is healthy."
+              exit 0
+            fi
+
+            if [[ "$state" != "running" || "$health" == "unhealthy" ]]; then
+              echo "Minecraft server stopped or became unhealthy."
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          echo "Minecraft server did not become healthy in time."
+          exit 1
+
+      - name: Verify Signalscope installation
+        run: |
+          set -euo pipefail
+          test -s data/mods/signalscope.jar
+          echo "Signalscope JAR was installed successfully."
+
+      - name: Print server logs on failure
+        if: failure()
+        run: docker compose logs --no-color mc || true
+
+      - name: Stop test server
+        if: always()
+        run: docker compose down --remove-orphans || true
