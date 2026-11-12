@@ -32,6 +32,13 @@ services:
       # Download the latest published Signalscope release.
       MODS: "${SIGNALSCOPE_MODS-https://github.com/Conquerors-of-the-Wild-osmos/signalscope/releases/latest/download/signalscope-fabric.jar}"
 
+    healthcheck:
+      test: [ "CMD", "mc-health" ]
+      start_period: 1m
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
     volumes:
       - ./data:/data
       - ./mods:/mods:ro
