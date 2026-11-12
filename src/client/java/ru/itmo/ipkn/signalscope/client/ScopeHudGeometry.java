@@ -1,9 +1,7 @@
 package ru.itmo.ipkn.signalscope.client;
 
 final class ScopeHudGeometry {
-
-    static final int ARC_SEGMENTS = 32;
-    static final float HALF_STROKE = 0.875F;
+    private static final int[] RADII = {9, 8, 6, 4, 2};
 
     private ScopeHudGeometry() {
     }
@@ -22,22 +20,23 @@ final class ScopeHudGeometry {
         return angle >= 0 && angle <= receptionAngle;
     }
 
-    static Arc arc(double angle, float screenWidth, double stableAngle, double receptionAngle) {
+    static int state(double angle, double stableAngle, double receptionAngle) {
+        if (angle <= stableAngle) return 0;
+        return Math.clamp((int) Math.ceil(4 * (angle - stableAngle) / (receptionAngle - stableAngle)), 1, 4);
+    }
+
+    static float separation(double angle, float screenWidth, double stableAngle, double receptionAngle) {
         double progress = Math.clamp((angle - stableAngle) / (receptionAngle - stableAngle), 0.0, 1.0);
-        return new Arc((float) (progress * Math.min(108, screenWidth * 0.3)),
-                (float) (9 * (1 - 0.75 * progress)),
-                (float) (9 * (1 - 0.35 * progress)));
+        return (float) (progress * Math.min(108, screenWidth * 0.3F));
     }
 
-    record Arc(float separation, float radiusX, float radiusY) {
-        Point point(boolean left, int step, boolean outer) {
-            double angle = -Math.PI / 2 + Math.PI * step / ARC_SEGMENTS;
-            float stroke = outer ? HALF_STROKE : -HALF_STROKE;
-            return new Point((float) (Math.cos(angle) * (radiusX + stroke)) * (left ? -1 : 1),
-                    (float) (Math.sin(angle) * (radiusY + stroke)));
-        }
+    static int outerOffset(int state, int row) {
+        double y = (row - 8) / 9.0;
+        return (int) Math.round(RADII[state] * Math.sqrt(1 - y * y));
     }
 
-    record Point(float x, float y) {
+    static int innerOffset(int state, int row) {
+        double y = (row - 8) / 7.0;
+        return Math.abs(y) >= 1 ? 0 : (int) Math.round((RADII[state] - 2) * Math.sqrt(1 - y * y));
     }
 }
