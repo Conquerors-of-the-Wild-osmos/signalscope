@@ -30,7 +30,7 @@ services:
       MODRINTH_DOWNLOAD_DEPENDENCIES: "required"
 
       # Download the latest published Signalscope release.
-      MODS: "https://github.com/Conquerors-of-the-Wild-osmos/signalscope/releases/latest/download/signalscope.jar"
+      MODS: "${SIGNALSCOPE_MODS-https://github.com/Conquerors-of-the-Wild-osmos/signalscope/releases/latest/download/signalscope-fabric.jar}"
 
     volumes:
       - ./data:/data
