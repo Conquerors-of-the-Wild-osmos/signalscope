@@ -16,6 +16,8 @@ public final class SignalscopeHud {
 
     private static final float LABEL_SCALE = 0.9F;
     private static final int LABEL_SPACING = 12;
+    private static final int GREEN = 0xFF60E860;
+    private static final int RED = 0xFFE85858;
     private final ClientSignals signals;
 
     public SignalscopeHud(ClientSignals signals) {
@@ -86,13 +88,13 @@ public final class SignalscopeHud {
             Target target = ordered.get(index);
             int state = ScopeHudGeometry.state(target.angle(), config.stableAngle, config.receptionAngle);
             boolean locked = state == 0;
-            int color = locked ? 0xFF70FF70 : 0xFFFF6060;
+            int color = locked ? GREEN : RED;
             if (locked) {
                 hasLockedTarget = true;
             } else {
                 float separation = ScopeHudGeometry.separation(target.angle(), hudWidth,
                         config.stableAngle, config.receptionAngle);
-                int arcColor = state == 4 ? 0x80FF6060 : color;
+                int arcColor = state == 4 ? (RED & 0x00FFFFFF) | 0x80000000 : color;
                 drawHalfRing(graphics, centerX - separation, centerY, true, state, arcColor);
                 drawHalfRing(graphics, centerX + separation, centerY, false, state, arcColor);
             }
@@ -106,8 +108,8 @@ public final class SignalscopeHud {
         }
         // Draw locked signals last so overlapping red arcs cannot cover the green ring.
         if (hasLockedTarget) {
-            drawHalfRing(graphics, centerX, centerY, true, 0, 0xFF70FF70);
-            drawHalfRing(graphics, centerX, centerY, false, 0, 0xFF70FF70);
+            drawHalfRing(graphics, centerX, centerY, true, 0, GREEN);
+            drawHalfRing(graphics, centerX, centerY, false, 0, GREEN);
         }
         if (visible < ordered.size()) {
             drawLabel(graphics, client,
@@ -128,12 +130,23 @@ public final class SignalscopeHud {
                                      int state, int color) {
         graphics.pose().pushPose();
         graphics.pose().translate(x, y, 0);
+        int edgeColor = ScopeHudGeometry.edgeColor(color);
         for (int row = 0; row < 17; row++) {
             int inner = ScopeHudGeometry.innerOffset(state, row);
             int outer = ScopeHudGeometry.outerOffset(state, row);
             int start = left ? -outer - 1 : inner;
             int end = left ? -inner : outer + 1;
             graphics.fill(start, row - 8, end, row - 7, color);
+            int outside = left ? start - 1 : end;
+            graphics.fill(outside, row - 8, outside + 1, row - 7, edgeColor);
+            if (inner > 0) {
+                int inside = left ? end : start - 1;
+                graphics.fill(inside, row - 8, inside + 1, row - 7, edgeColor);
+            }
+            if (row == 0 || row == 16) {
+                int edgeY = row == 0 ? -9 : 9;
+                graphics.fill(start, edgeY, end, edgeY + 1, edgeColor);
+            }
         }
         graphics.pose().popPose();
     }

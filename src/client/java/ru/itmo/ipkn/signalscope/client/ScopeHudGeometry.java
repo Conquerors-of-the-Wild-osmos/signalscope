@@ -30,6 +30,10 @@ final class ScopeHudGeometry {
         return (float) (progress * Math.min(108, screenWidth * 0.3F));
     }
 
+    static int edgeColor(int color) {
+        return (color & 0x00FFFFFF) | ((color >>> 24) / 3 << 24);
+    }
+
     static int outerOffset(int state, int row) {
         double y = (row - 8) / 9.0;
         return (int) Math.round(RADII[state] * Math.sqrt(1 - y * y));

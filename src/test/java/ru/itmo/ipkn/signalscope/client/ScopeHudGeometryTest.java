@@ -38,6 +38,13 @@ class ScopeHudGeometryTest {
     }
 
     @Test
+    void edgeOpacityTracksTheShapeOpacity() {
+        assertEquals(0x55E85858, ScopeHudGeometry.edgeColor(0xFFE85858));
+        assertEquals(0x2AE85858, ScopeHudGeometry.edgeColor(0x80E85858));
+        assertEquals(0x5560E860, ScopeHudGeometry.edgeColor(0xFF60E860));
+    }
+
+    @Test
     void hudSizeAndSpreadAreIndependentOfVanillaGuiScale() {
         for (int width : new int[]{854, 1920, 3840}) {
             for (int percent : new int[]{50, 100, 115, 200}) {
