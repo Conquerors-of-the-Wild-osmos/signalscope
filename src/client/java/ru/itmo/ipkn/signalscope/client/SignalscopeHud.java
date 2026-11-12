@@ -1,13 +1,10 @@
 package ru.itmo.ipkn.signalscope.client;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 import ru.itmo.ipkn.signalscope.item.SignalscopeItems;
 import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload;
 import ru.itmo.ipkn.signalscope.signal.SignalGeometry;
@@ -19,6 +16,8 @@ public final class SignalscopeHud {
 
     private static final float LABEL_SCALE = 0.9F;
     private static final int LABEL_SPACING = 12;
+    private static final int GREEN = 0xFF60E860;
+    private static final int RED = 0xFFE85858;
     private final ClientSignals signals;
 
     public SignalscopeHud(ClientSignals signals) {
@@ -87,14 +86,17 @@ public final class SignalscopeHud {
         boolean hasLockedTarget = false;
         for (int index = 0; index < ordered.size(); index++) {
             Target target = ordered.get(index);
-            boolean locked = target.angle() <= config.stableAngle;
-            var arc = ScopeHudGeometry.arc(target.angle(), hudWidth, config.stableAngle, config.receptionAngle);
-            int color = locked ? 0xFF70FF70 : 0xFFFF6060;
+            int state = ScopeHudGeometry.state(target.angle(), config.stableAngle, config.receptionAngle);
+            boolean locked = state == 0;
+            int color = locked ? GREEN : RED;
             if (locked) {
                 hasLockedTarget = true;
             } else {
-                drawHalfRing(graphics, centerX - arc.separation(), centerY, true, arc, color);
-                drawHalfRing(graphics, centerX + arc.separation(), centerY, false, arc, color);
+                float separation = ScopeHudGeometry.separation(target.angle(), hudWidth,
+                        config.stableAngle, config.receptionAngle);
+                int arcColor = state == 4 ? (RED & 0x00FFFFFF) | 0x80000000 : color;
+                drawHalfRing(graphics, centerX - separation, centerY, true, state, arcColor);
+                drawHalfRing(graphics, centerX + separation, centerY, false, state, arcColor);
             }
             if (index < visible) {
                 drawLabel(graphics, client,
@@ -106,9 +108,8 @@ public final class SignalscopeHud {
         }
         // Draw locked signals last so overlapping red arcs cannot cover the green ring.
         if (hasLockedTarget) {
-            var arc = ScopeHudGeometry.arc(0, hudWidth, config.stableAngle, config.receptionAngle);
-            drawHalfRing(graphics, centerX, centerY, true, arc, 0xFF70FF70);
-            drawHalfRing(graphics, centerX, centerY, false, arc, 0xFF70FF70);
+            drawHalfRing(graphics, centerX, centerY, true, 0, GREEN);
+            drawHalfRing(graphics, centerX, centerY, false, 0, GREEN);
         }
         if (visible < ordered.size()) {
             drawLabel(graphics, client,
@@ -126,34 +127,20 @@ public final class SignalscopeHud {
     }
 
     private static void drawHalfRing(GuiGraphics graphics, float x, float y, boolean left,
-                                     ScopeHudGeometry.Arc arc, int color) {
-        Matrix4f pose = graphics.pose().last().pose();
-        VertexConsumer vertices = graphics.bufferSource().getBuffer(RenderType.gui());
-        var previousOuter = arc.point(left, 0, true);
-        var previousInner = arc.point(left, 0, false);
-        for (int step = 1; step <= ScopeHudGeometry.ARC_SEGMENTS; step++) {
-            var outer = arc.point(left, step, true);
-            var inner = arc.point(left, step, false);
-            // Match vanilla GUI quad winding on both mirrored halves.
-            if (left) {
-                vertex(vertices, pose, x, y, previousOuter, color);
-                vertex(vertices, pose, x, y, outer, color);
-                vertex(vertices, pose, x, y, inner, color);
-                vertex(vertices, pose, x, y, previousInner, color);
-            } else {
-                vertex(vertices, pose, x, y, previousInner, color);
-                vertex(vertices, pose, x, y, inner, color);
-                vertex(vertices, pose, x, y, outer, color);
-                vertex(vertices, pose, x, y, previousOuter, color);
+                                     int state, int color) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
+        graphics.pose().scale(2.0F / 3, 2.0F / 3, 1);
+        for (int row = 0; row < ScopeHudGeometry.HEIGHT; row++) {
+            for (int col = 0; col < ScopeHudGeometry.WIDTH; col++) {
+                int pixel = ScopeHudGeometry.pixelColor(state, row, col, color);
+                if (pixel == 0) continue;
+                int pixelX = left ? -col - 1 : col;
+                int pixelY = row - ScopeHudGeometry.HEIGHT / 2;
+                graphics.fill(pixelX, pixelY, pixelX + 1, pixelY + 1, pixel);
             }
-            previousOuter = outer;
-            previousInner = inner;
         }
-    }
-
-    private static void vertex(VertexConsumer vertices, Matrix4f pose, float x, float y,
-                               ScopeHudGeometry.Point point, int color) {
-        vertices.addVertex(pose, x + point.x(), y + point.y(), 0).setColor(color);
+        graphics.pose().popPose();
     }
 
     private record Target(PlayerSignalsPayload.Signal signal, double distance, double angle) {

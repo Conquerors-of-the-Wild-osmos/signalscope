@@ -1,9 +1,38 @@
 package ru.itmo.ipkn.signalscope.client;
 
 final class ScopeHudGeometry {
+    static final int WIDTH = 16;
+    static final int HEIGHT = 30;
+    private static final double[] RADII = {13.5, 12, 9, 6, 3};
+    private static final int[][][] PIXELS = new int[5][HEIGHT][WIDTH];
 
-    static final int ARC_SEGMENTS = 32;
-    static final float HALF_STROKE = 0.875F;
+    // Невероятное нейрохрючево с 5-ю вложенными циклами
+    static {
+        for (int state = 0; state < RADII.length; state++) {
+            for (int row = 0; row < HEIGHT; row++) {
+                for (int col = 0; col < WIDTH; col++) {
+                    int body = 0;
+                    int outline = 0;
+                    for (int sy = 0; sy < 4; sy++) {
+                        for (int sx = 0; sx < 4; sx++) {
+                            double x = col + (sx + 0.5) / 4;
+                            double y = row - HEIGHT / 2.0 + (sy + 0.5) / 4;
+                            double radius = RADII[state];
+                            boolean outer = insideEllipse(x, y, radius, 13.5);
+                            boolean inner = insideEllipse(x, y, radius - 3, 10.5);
+                            if (outer && !inner) {
+                                body++;
+                            } else if (insideEllipse(x, y, radius + 1, 14.5)
+                                    && !insideEllipse(x, y, radius - 4, 9.5)) {
+                                outline++;
+                            }
+                        }
+                    }
+                    PIXELS[state][row][col] = body | (outline << 5);
+                }
+            }
+        }
+    }
 
     private ScopeHudGeometry() {
     }
@@ -22,22 +51,31 @@ final class ScopeHudGeometry {
         return angle >= 0 && angle <= receptionAngle;
     }
 
-    static Arc arc(double angle, float screenWidth, double stableAngle, double receptionAngle) {
+    static int state(double angle, double stableAngle, double receptionAngle) {
+        if (angle <= stableAngle) return 0;
+        return Math.clamp((int) Math.ceil(4 * (angle - stableAngle) / (receptionAngle - stableAngle)), 1, 4);
+    }
+
+    static float separation(double angle, float screenWidth, double stableAngle, double receptionAngle) {
         double progress = Math.clamp((angle - stableAngle) / (receptionAngle - stableAngle), 0.0, 1.0);
-        return new Arc((float) (progress * Math.min(108, screenWidth * 0.3)),
-                (float) (9 * (1 - 0.75 * progress)),
-                (float) (9 * (1 - 0.35 * progress)));
+        return (float) (progress * Math.min(108, screenWidth * 0.3F));
     }
 
-    record Arc(float separation, float radiusX, float radiusY) {
-        Point point(boolean left, int step, boolean outer) {
-            double angle = -Math.PI / 2 + Math.PI * step / ARC_SEGMENTS;
-            float stroke = outer ? HALF_STROKE : -HALF_STROKE;
-            return new Point((float) (Math.cos(angle) * (radiusX + stroke)) * (left ? -1 : 1),
-                    (float) (Math.sin(angle) * (radiusY + stroke)));
-        }
+    private static boolean insideEllipse(double x, double y, double radiusX, double radiusY) {
+        return radiusX > 0 && x * x / (radiusX * radiusX) + y * y / (radiusY * radiusY) <= 1;
     }
 
-    record Point(float x, float y) {
+    static int pixelColor(int state, int row, int col, int color) {
+        int coverage = PIXELS[state][row][col];
+        int body = coverage & 31;
+        int outline = coverage >>> 5;
+        int total = body + outline;
+        if (total == 0) return 0;
+        int alpha = (color >>> 24) * total / 16;
+        int weight = 2 * body + outline;
+        int red = ((color >> 16) & 255) * weight / (2 * total);
+        int green = ((color >> 8) & 255) * weight / (2 * total);
+        int blue = (color & 255) * weight / (2 * total);
+        return alpha << 24 | red << 16 | green << 8 | blue;
     }
 }
