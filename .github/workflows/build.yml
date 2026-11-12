@@ -221,6 +221,21 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Update version tag
+        env:
+          RELEASE_TAG: v${{ needs.build.outputs.mod_version }}
+        run: |
+          set -euo pipefail
+          git tag --force "$RELEASE_TAG" "$GITHUB_SHA"
+          git push --force origin "refs/tags/$RELEASE_TAG"
+          echo "Updated $RELEASE_TAG to $GITHUB_SHA"
+
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
