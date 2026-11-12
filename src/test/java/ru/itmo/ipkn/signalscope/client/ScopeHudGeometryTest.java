@@ -23,25 +23,28 @@ class ScopeHudGeometryTest {
             }
         }
         for (int state = 0; state <= 4; state++) {
-            for (int row = 0; row < 17; row++) {
-                assertEquals(ScopeHudGeometry.outerOffset(state, row), ScopeHudGeometry.outerOffset(state, 16 - row));
-                assertEquals(ScopeHudGeometry.innerOffset(state, row), ScopeHudGeometry.innerOffset(state, 16 - row));
-                assertTrue(ScopeHudGeometry.outerOffset(state, row) >= ScopeHudGeometry.innerOffset(state, row));
+            boolean body = false;
+            boolean outline = false;
+            boolean antialiased = false;
+            for (int row = 0; row < ScopeHudGeometry.HEIGHT; row++) {
+                for (int col = 0; col < ScopeHudGeometry.WIDTH; col++) {
+                    int pixel = ScopeHudGeometry.pixelColor(state, row, col, 0xFFE85858);
+                    assertEquals(pixel, ScopeHudGeometry.pixelColor(state, ScopeHudGeometry.HEIGHT - 1 - row, col, 0xFFE85858));
+                    body |= pixel == 0xFFE85858;
+                    if (pixel != 0 && (pixel & 0xFFFFFF) == 0x742C2C) {
+                        outline = true;
+                        int greenPixel = ScopeHudGeometry.pixelColor(state, row, col, 0xFF60E860);
+                        assertEquals(0x307430, greenPixel & 0xFFFFFF);
+                    }
+                    antialiased |= pixel != 0 && pixel >>> 24 < 255;
+                    int translucent = ScopeHudGeometry.pixelColor(state, row, col, 0x80E85858);
+                    assertEquals((pixel >>> 24) * 128 / 255, translucent >>> 24, 1);
+                }
             }
+            assertTrue(body && outline && antialiased, "state " + state);
         }
-        // The circular ring has rounded ends and a broad, hollow middle; the last arc remains curved.
-        assertTrue(ScopeHudGeometry.outerOffset(0, 0) > 0);
-        assertTrue(ScopeHudGeometry.innerOffset(0, 8) > 0);
-        assertTrue(ScopeHudGeometry.outerOffset(4, 8) > ScopeHudGeometry.outerOffset(4, 0));
         assertTrue(ScopeHudGeometry.isVisible(60, 60));
         assertFalse(ScopeHudGeometry.isVisible(60.001, 60));
-    }
-
-    @Test
-    void edgeOpacityTracksTheShapeOpacity() {
-        assertEquals(0x55E85858, ScopeHudGeometry.edgeColor(0xFFE85858));
-        assertEquals(0x2AE85858, ScopeHudGeometry.edgeColor(0x80E85858));
-        assertEquals(0x5560E860, ScopeHudGeometry.edgeColor(0xFF60E860));
     }
 
     @Test

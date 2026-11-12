@@ -130,22 +130,14 @@ public final class SignalscopeHud {
                                      int state, int color) {
         graphics.pose().pushPose();
         graphics.pose().translate(x, y, 0);
-        int edgeColor = ScopeHudGeometry.edgeColor(color);
-        for (int row = 0; row < 17; row++) {
-            int inner = ScopeHudGeometry.innerOffset(state, row);
-            int outer = ScopeHudGeometry.outerOffset(state, row);
-            int start = left ? -outer - 1 : inner;
-            int end = left ? -inner : outer + 1;
-            graphics.fill(start, row - 8, end, row - 7, color);
-            int outside = left ? start - 1 : end;
-            graphics.fill(outside, row - 8, outside + 1, row - 7, edgeColor);
-            if (inner > 0) {
-                int inside = left ? end : start - 1;
-                graphics.fill(inside, row - 8, inside + 1, row - 7, edgeColor);
-            }
-            if (row == 0 || row == 16) {
-                int edgeY = row == 0 ? -9 : 9;
-                graphics.fill(start, edgeY, end, edgeY + 1, edgeColor);
+        graphics.pose().scale(2.0F / 3, 2.0F / 3, 1);
+        for (int row = 0; row < ScopeHudGeometry.HEIGHT; row++) {
+            for (int col = 0; col < ScopeHudGeometry.WIDTH; col++) {
+                int pixel = ScopeHudGeometry.pixelColor(state, row, col, color);
+                if (pixel == 0) continue;
+                int pixelX = left ? -col - 1 : col;
+                int pixelY = row - ScopeHudGeometry.HEIGHT / 2;
+                graphics.fill(pixelX, pixelY, pixelX + 1, pixelY + 1, pixel);
             }
         }
         graphics.pose().popPose();

@@ -1,7 +1,38 @@
 package ru.itmo.ipkn.signalscope.client;
 
 final class ScopeHudGeometry {
-    private static final int[] RADII = {9, 8, 6, 4, 2};
+    static final int WIDTH = 16;
+    static final int HEIGHT = 30;
+    private static final double[] RADII = {13.5, 12, 9, 6, 3};
+    private static final int[][][] PIXELS = new int[5][HEIGHT][WIDTH];
+
+    // Невероятное нейрохрючево с 5-ю вложенными циклами
+    static {
+        for (int state = 0; state < RADII.length; state++) {
+            for (int row = 0; row < HEIGHT; row++) {
+                for (int col = 0; col < WIDTH; col++) {
+                    int body = 0;
+                    int outline = 0;
+                    for (int sy = 0; sy < 4; sy++) {
+                        for (int sx = 0; sx < 4; sx++) {
+                            double x = col + (sx + 0.5) / 4;
+                            double y = row - HEIGHT / 2.0 + (sy + 0.5) / 4;
+                            double radius = RADII[state];
+                            boolean outer = insideEllipse(x, y, radius, 13.5);
+                            boolean inner = insideEllipse(x, y, radius - 3, 10.5);
+                            if (outer && !inner) {
+                                body++;
+                            } else if (insideEllipse(x, y, radius + 1, 14.5)
+                                    && !insideEllipse(x, y, radius - 4, 9.5)) {
+                                outline++;
+                            }
+                        }
+                    }
+                    PIXELS[state][row][col] = body | (outline << 5);
+                }
+            }
+        }
+    }
 
     private ScopeHudGeometry() {
     }
@@ -30,17 +61,21 @@ final class ScopeHudGeometry {
         return (float) (progress * Math.min(108, screenWidth * 0.3F));
     }
 
-    static int edgeColor(int color) {
-        return (color & 0x00FFFFFF) | ((color >>> 24) / 3 << 24);
+    private static boolean insideEllipse(double x, double y, double radiusX, double radiusY) {
+        return radiusX > 0 && x * x / (radiusX * radiusX) + y * y / (radiusY * radiusY) <= 1;
     }
 
-    static int outerOffset(int state, int row) {
-        double y = (row - 8) / 9.0;
-        return (int) Math.round(RADII[state] * Math.sqrt(1 - y * y));
-    }
-
-    static int innerOffset(int state, int row) {
-        double y = (row - 8) / 7.0;
-        return Math.abs(y) >= 1 ? 0 : (int) Math.round((RADII[state] - 2) * Math.sqrt(1 - y * y));
+    static int pixelColor(int state, int row, int col, int color) {
+        int coverage = PIXELS[state][row][col];
+        int body = coverage & 31;
+        int outline = coverage >>> 5;
+        int total = body + outline;
+        if (total == 0) return 0;
+        int alpha = (color >>> 24) * total / 16;
+        int weight = 2 * body + outline;
+        int red = ((color >> 16) & 255) * weight / (2 * total);
+        int green = ((color >> 8) & 255) * weight / (2 * total);
+        int blue = (color & 255) * weight / (2 * total);
+        return alpha << 24 | red << 16 | green << 8 | blue;
     }
 }
