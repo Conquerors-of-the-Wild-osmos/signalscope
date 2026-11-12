@@ -6,9 +6,19 @@ import ru.itmo.ipkn.signalscope.network.PlayerSignalsPayload.Signal;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignalscopeServerTest {
+
+    @Test
+    void toggleOffOverridesVanillaHeldItemUse() {
+        assertFalse(SignalscopeServer.isRadioTransmitting(false, true));
+        assertTrue(SignalscopeServer.isRadioTransmitting(true, false));
+        assertTrue(SignalscopeServer.isRadioTransmitting(null, true));
+        assertFalse(SignalscopeServer.isRadioTransmitting(null, false));
+    }
+
     @Test
     void transmitterRenameAndResetProduceDelta() {
         UUID id = UUID.randomUUID();

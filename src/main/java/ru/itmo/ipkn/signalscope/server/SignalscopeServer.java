@@ -69,19 +69,13 @@ public final class SignalscopeServer {
             ServerPlayer player,
             MinecraftServer server
     ) {
-        if (!payload.transmitting()) {
+        if (!payload.toggleMode()) {
             toggleRequests.remove(id);
         } else if (!player.isSpectator()
                 && player.isAlive()
                 && SignalscopeItems.holdsRadio(player, payload.hand())) {
-            toggleRequests.put(
-                    id,
-                    new ToggleRequest(
-                            payload.hand(),
-                            player.getItemInHand(payload.hand()),
-                            server.getTickCount() + TOGGLE_TIMEOUT_TICKS
-                    )
-            );
+            toggleRequests.put(id, new ToggleRequest(payload.hand(), player.getItemInHand(payload.hand()).copy(),
+                    player.getInventory().selected, payload.transmitting(), server.getTickCount() + TOGGLE_TIMEOUT_TICKS));
         }
     }
 
@@ -94,14 +88,15 @@ public final class SignalscopeServer {
         for (var player : players) {
             ToggleRequest toggle = toggleRequests.get(player.getUUID());
 
-            boolean toggleTransmitting = toggle != null
+            boolean toggleValid = toggle != null
                     && toggle.expiresAt() >= server.getTickCount()
                     && !player.isSpectator()
                     && player.isAlive()
-                    && player.getItemInHand(toggle.hand()) == toggle.stack()
+                    && (toggle.hand() != InteractionHand.MAIN_HAND || toggle.selectedSlot() == player.getInventory().selected)
+                    && ItemStack.isSameItemSameComponents(player.getItemInHand(toggle.hand()), toggle.stack())
                     && SignalscopeItems.holdsRadio(player, toggle.hand());
 
-            if (!toggleTransmitting) {
+            if (!toggleValid) {
                 toggleRequests.remove(player.getUUID());
             }
 
@@ -109,8 +104,8 @@ public final class SignalscopeServer {
                     player.getUUID(),
                     new RadioState.Player(
                             player.level().dimension().location().toString(),
-                            !player.isSpectator()
-                                    && (SignalscopeItems.isTransmitting(player) || toggleTransmitting)
+                            !player.isSpectator() && isRadioTransmitting(
+                                    toggleValid ? toggle.transmitting() : null, SignalscopeItems.isTransmitting(player))
                     )
             );
         }
@@ -316,6 +311,11 @@ public final class SignalscopeServer {
         }
     }
 
-    private record ToggleRequest(InteractionHand hand, ItemStack stack, int expiresAt) {
+    static boolean isRadioTransmitting(Boolean toggle, boolean holdingUse) {
+        return toggle != null ? toggle : holdingUse;
+    }
+
+    private record ToggleRequest(InteractionHand hand, ItemStack stack, int selectedSlot, boolean transmitting,
+                                 int expiresAt) {
     }
 }
